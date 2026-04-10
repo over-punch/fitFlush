@@ -2,6 +2,7 @@
 // The probe class MUST return a size derived from the probe's current fontSize
 // so the algorithm can find a valid fit. Containers return fixed dimensions.
 
+import { jest } from '@jest/globals'
 import { FIT_FLUSH_CLASSES } from '../core/types'
 
 /** Configuration for the mock measurement layer installed before each test. */
