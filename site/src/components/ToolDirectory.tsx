@@ -11,7 +11,7 @@ const TOOLS = [
 	{ name: "Optical Margin", url: "https://opticalmargin.com", id: "opticalMargin" },
 	{ name: "Opsz Stepper",   url: "https://opszstepper.com",   id: "opszStepper"   },
 	{ name: "Ragtooth",       url: "https://ragtooth.com",      id: "ragtooth"      },
-	{ name: "Speech Type",    url: "https://speechtype.com",    id: "speechType"    },
+	{ name: "Speech Type",    url: "https://speechtype.liiift-studio.com",    id: "speechType"    },
 	{ name: "Stabil Type",    url: "https://stabiltype.com",    id: "stabilType"    },
 	{ name: "Steady Gray",    url: "https://steadygray.com",    id: "steadyGray"    },
 	{ name: "Text Breath",    url: "https://textbreath.com",    id: "textBreath"    },
