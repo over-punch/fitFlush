@@ -1,0 +1,61 @@
+/* Global styles for the fit-flush landing site. */
+
+@import "tailwindcss";
+
+@font-face {
+	font-family: "Inter Variable";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("/fonts/inter-variable.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Merriweather Variable";
+	font-style: normal;
+	font-weight: 300 900;
+	font-display: swap;
+	src: url("/fonts/merriweather-variable.woff2") format("woff2");
+}
+
+@theme {
+	--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-serif: "Merriweather Variable", ui-serif, Georgia, serif;
+	--color-bg: #0e0618;
+	--color-surface: #1a0d2e;
+	--color-border: #2d1b4e;
+	--color-accent: #a78bfa;
+	--color-accent-dim: #7c5cbf;
+	--color-text: #f0eaf8;
+	--color-text-muted: #a89bc2;
+}
+
+html {
+	scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+	display: none;
+}
+
+body {
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font-sans);
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 {
+	text-wrap: balance;
+}
+
+p {
+	text-wrap: pretty;
+}
+
+::selection {
+	background-color: var(--color-accent);
+	color: var(--color-bg);
+}

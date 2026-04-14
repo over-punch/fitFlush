@@ -1,11 +1,13 @@
-// Root layout for the fit-flush landing site — stub until the full demo lands.
+// Root layout for the fit-flush landing site.
 
 import type { Metadata, Viewport } from 'next'
+import './globals.css'
 
 export const metadata: Metadata = {
 	title: 'fit-flush — fit text to its container',
 	description:
 		'Binary-search font-size fitting with variable-font axis safety. Part of the Liiift Studio type-tools suite.',
+	metadataBase: new URL('https://fit-flush.com'),
 }
 
 export const viewport: Viewport = {
@@ -13,10 +15,11 @@ export const viewport: Viewport = {
 	initialScale: 1,
 }
 
+/** Root HTML shell with Inter Variable loaded via globals.css @font-face. */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en">
-			<body>{children}</body>
+			<body className="min-h-screen">{children}</body>
 		</html>
 	)
 }
