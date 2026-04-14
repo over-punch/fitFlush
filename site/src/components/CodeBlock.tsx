@@ -1,11 +1,12 @@
 // Lightweight syntax-highlighted code block — keywords bold, strings italic, punctuation muted
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react'
 
 const KEYWORDS = new Set([
-	"import", "export", "from", "const", "let", "var",
-	"function", "return", "new", "default", "async", "await",
+	'import', 'export', 'from', 'const', 'let', 'var',
+	'function', 'return', 'new', 'default', 'async', 'await',
 ])
 
+// Captures: (comment) | (string) | (identifier) | (punctuation)
 const TOKEN = /(\/\/[^\n]*)|(`[^`]*`|'[^']*'|"[^"]*")|\b([a-zA-Z_$][a-zA-Z0-9_$]*)\b|([\[\]{}()<>=,;./])/g
 
 /** Tokenise code into styled ReactNodes */
@@ -17,14 +18,17 @@ function tokenize(code: string): ReactNode[] {
 	let match: RegExpExecArray | null
 
 	while ((match = TOKEN.exec(code)) !== null) {
+		// Plain gap (whitespace, numbers, operators not in punct set)
 		if (match.index > last) {
 			nodes.push(<span key={key++} style={{ opacity: 0.6 }}>{code.slice(last, match.index)}</span>)
 		}
+
 		const [full, comment, str, word, punct] = match
+
 		if (comment) {
-			nodes.push(<span key={key++} style={{ opacity: 0.4 }}>{comment}</span>)
+			nodes.push(<span key={key++} style={{ opacity: 0.6 }}>{comment}</span>)
 		} else if (str) {
-			nodes.push(<em key={key++} style={{ fontStyle: "italic", opacity: 0.6 }}>{str}</em>)
+			nodes.push(<em key={key++} style={{ fontStyle: 'italic', opacity: 0.6 }}>{str}</em>)
 		} else if (word) {
 			if (KEYWORDS.has(word)) {
 				nodes.push(<strong key={key++} style={{ fontWeight: 600 }}>{word}</strong>)
@@ -34,6 +38,7 @@ function tokenize(code: string): ReactNode[] {
 		} else if (punct) {
 			nodes.push(<span key={key++} style={{ opacity: 0.6 }}>{punct}</span>)
 		}
+
 		last = match.index + full.length
 	}
 
