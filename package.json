@@ -1,6 +1,6 @@
 {
 	"name": "@liiift-studio/fit-flush",
-	"version": "0.0.1",
+	"version": "0.0.4",
 	"description": "Fit text size to its container with binary-search precision and variable-font safety.",
 	"keywords": [
 		"typography",

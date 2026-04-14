@@ -1,39 +1,42 @@
-// Click-to-copy npm install command.
+"use client"
 
-'use client'
+// Click-to-copy npm install snippet with a link to the npm package page
+import { useState } from "react"
 
-import { useCallback, useState } from 'react'
+const CMD = "npm install @liiift-studio/fit-flush"
+const NPM_URL = "https://www.npmjs.com/package/@liiift-studio/fit-flush"
 
-/** Package name for the install command. */
-const PKG = '@liiift-studio/fit-flush'
-
-/** Click-to-copy install button that shows a brief "Copied" confirmation. */
+/** Displays the install command, copies it to clipboard on click, and links to npm */
 export default function CopyInstall() {
 	const [copied, setCopied] = useState(false)
 
-	const handleCopy = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(`npm i ${PKG}`)
+	function handleCopy() {
+		navigator.clipboard.writeText(CMD).then(() => {
 			setCopied(true)
-			setTimeout(() => setCopied(false), 1500)
-		} catch {
-			// Clipboard API may not be available in all contexts
-		}
-	}, [])
+			setTimeout(() => setCopied(false), 2000)
+		}).catch(() => {})
+	}
 
 	return (
-		<button
-			type="button"
-			onClick={handleCopy}
-			aria-label={`Copy install command: npm i ${PKG}`}
-			className="group flex items-center gap-3 px-5 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent-dim)] transition-colors cursor-pointer"
-		>
-			<code className="text-sm font-mono text-[var(--color-accent)]">
-				npm i {PKG}
-			</code>
-			<span className="text-xs text-[var(--color-text-muted)] group-hover:text-[var(--color-text)] transition-colors">
-				{copied ? 'Copied' : 'Copy'}
-			</span>
-		</button>
+		<div className="flex items-center gap-3">
+			<button
+				onClick={handleCopy}
+				title="Copy to clipboard"
+				className="flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 active:bg-white/30 px-3 py-1.5 rounded font-mono transition-colors cursor-pointer select-all"
+			>
+				<span>{CMD}</span>
+				<span className="opacity-50 text-xs transition-opacity">
+					{copied ? "\u2713" : "\u2398"}
+				</span>
+			</button>
+			<a
+				href={NPM_URL}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="text-sm opacity-50 hover:opacity-100 transition-opacity"
+			>
+				npm ↗
+			</a>
+		</div>
 	)
 }

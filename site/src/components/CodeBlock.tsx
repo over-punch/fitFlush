@@ -1,51 +1,59 @@
-// Minimal code block with copy button — no syntax highlighting dependency.
+// Lightweight syntax-highlighted code block — keywords bold, strings italic, punctuation muted
+import type { ReactNode } from 'react'
 
-'use client'
+const KEYWORDS = new Set([
+	'import', 'export', 'from', 'const', 'let', 'var',
+	'function', 'return', 'new', 'default', 'async', 'await',
+])
 
-import { useCallback, useState } from 'react'
+// Captures: (comment) | (string) | (identifier) | (punctuation)
+const TOKEN = /(\/\/[^\n]*)|(`[^`]*`|'[^']*'|"[^"]*")|\b([a-zA-Z_$][a-zA-Z0-9_$]*)\b|([\[\]{}()<>=,;./])/g
 
-/** Props for the CodeBlock component. */
-interface CodeBlockProps {
-	/** Code string to display. */
-	code: string
-	/** Optional label shown above the block. */
-	label?: string
+/** Tokenise code into styled ReactNodes */
+function tokenize(code: string): ReactNode[] {
+	const nodes: ReactNode[] = []
+	let last = 0
+	let key = 0
+	TOKEN.lastIndex = 0
+	let match: RegExpExecArray | null
+
+	while ((match = TOKEN.exec(code)) !== null) {
+		// Plain gap (whitespace, numbers, operators not in punct set)
+		if (match.index > last) {
+			nodes.push(<span key={key++} style={{ opacity: 0.6 }}>{code.slice(last, match.index)}</span>)
+		}
+
+		const [full, comment, str, word, punct] = match
+
+		if (comment) {
+			nodes.push(<span key={key++} style={{ opacity: 0.6 }}>{comment}</span>)
+		} else if (str) {
+			nodes.push(<em key={key++} style={{ fontStyle: 'italic', opacity: 0.6 }}>{str}</em>)
+		} else if (word) {
+			if (KEYWORDS.has(word)) {
+				nodes.push(<strong key={key++} style={{ fontWeight: 600 }}>{word}</strong>)
+			} else {
+				nodes.push(<span key={key++}>{word}</span>)
+			}
+		} else if (punct) {
+			nodes.push(<span key={key++} style={{ opacity: 0.6 }}>{punct}</span>)
+		}
+
+		last = match.index + full.length
+	}
+
+	if (last < code.length) {
+		nodes.push(<span key={key++} style={{ opacity: 0.6 }}>{code.slice(last)}</span>)
+	}
+
+	return nodes
 }
 
-/** Styled <pre> block with click-to-copy. */
-export default function CodeBlock({ code, label }: CodeBlockProps) {
-	const [copied, setCopied] = useState(false)
-
-	const handleCopy = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(code)
-			setCopied(true)
-			setTimeout(() => setCopied(false), 1500)
-		} catch {
-			// Clipboard API not available
-		}
-	}, [code])
-
+/** Renders a syntax-highlighted code snippet */
+export default function CodeBlock({ code }: { code: string }) {
 	return (
-		<div className="relative rounded-xl overflow-hidden border border-[var(--color-border)]">
-			{label && (
-				<div className="px-4 py-2 bg-[var(--color-surface)] border-b border-[var(--color-border)] text-xs text-[var(--color-text-muted)] font-mono">
-					{label}
-				</div>
-			)}
-			<pre className="p-4 bg-[var(--color-bg)] overflow-x-auto text-sm leading-relaxed">
-				<code className="text-[var(--color-text)] font-mono whitespace-pre">
-					{code}
-				</code>
-			</pre>
-			<button
-				type="button"
-				onClick={handleCopy}
-				aria-label="Copy code"
-				className="absolute top-2 right-2 px-2 py-1 text-xs rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-accent-dim)] transition-colors cursor-pointer"
-			>
-				{copied ? 'Copied' : 'Copy'}
-			</button>
-		</div>
+		<pre className="bg-white/5 rounded p-4 overflow-x-auto text-xs leading-relaxed font-mono">
+			<code>{tokenize(code)}</code>
+		</pre>
 	)
 }

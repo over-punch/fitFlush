@@ -1,204 +1,172 @@
-// Interactive demo for fit-flush — sliders, mode toggle, VF toggle, live preview.
+"use client"
 
-'use client'
+// fitFlush demo — resizable container showing automatic font-size fitting
+import { useState, useDeferredValue } from "react"
+import { useFitFlush } from "@liiift-studio/fit-flush"
+import type { FitFlushOptions } from "@liiift-studio/fit-flush"
 
-import { useDeferredValue, useState } from 'react'
-import { FitFlushText } from '@liiift-studio/fit-flush'
-import type { FitFlushOptions } from '@liiift-studio/fit-flush'
+type FitMode = "width" | "height" | "both"
 
-/** Default headline shown in the demo. */
-const DEFAULT_TEXT = 'Fit Flush'
+const MODES: { value: FitMode; label: string; description: string }[] = [
+	{ value: "width",  label: "Width",  description: "Single line — scales to fill the exact width" },
+	{ value: "height", label: "Height", description: "Wrapping — scales to fill the exact height"  },
+	{ value: "both",   label: "Both",   description: "Largest size that fits width and height"      },
+]
 
-/** Mode options for the radio group. */
-const MODES: FitFlushOptions['mode'][] = ['width', 'height', 'both']
+const DEFAULT_TEXT = "Binary Search"
+const DEMO_FONT = "var(--font-sans)"
 
-/** Slider definition for reuse. */
-interface SliderDef {
-	label: string
-	min: number
-	max: number
-	step: number
-	value: number
-	onChange: (v: number) => void
-}
-
-/** Single labeled range input with accessibility and mobile touch-action. */
-function Slider({ label, min, max, step, value, onChange }: SliderDef) {
+/**
+ * Inner component that uses the hook — needs to re-mount when mode changes
+ * so the ResizeObserver re-runs with fresh options.
+ */
+function FittedText({ text, options }: { text: string; options: FitFlushOptions }) {
+	const ref = useFitFlush<HTMLParagraphElement>(options)
 	return (
-		<label className="flex flex-col gap-1">
-			<span className="text-sm text-[var(--color-text-muted)] flex justify-between">
-				<span>{label}</span>
-				<span className="tabular-nums font-mono">{value}</span>
-			</span>
-			<input
-				type="range"
-				aria-label={label}
-				min={min}
-				max={max}
-				step={step}
-				value={value}
-				onChange={(e) => onChange(Number(e.target.value))}
-				className="w-full accent-[var(--color-accent)] h-2 rounded-full cursor-pointer"
-				style={{ touchAction: 'none' }}
-			/>
-		</label>
+		<p
+			ref={ref}
+			style={{ fontFamily: DEMO_FONT, fontWeight: 700, lineHeight: 1.1, margin: 0 }}
+		>
+			{text}
+		</p>
 	)
 }
 
-/** Interactive fit-flush demo with live preview headline and control sliders. */
 export default function Demo() {
-	const [text, setText] = useState(DEFAULT_TEXT)
-	const [mode, setMode] = useState<FitFlushOptions['mode']>('width')
-	const [min, setMin] = useState(8)
-	const [max, setMax] = useState(400)
-	const [precision, setPrecision] = useState(0.5)
+	const [text,    setText]    = useState(DEFAULT_TEXT)
+	const [mode,    setMode]    = useState<FitMode>("width")
 	const [padding, setPadding] = useState(0)
-	const [vfEnabled, setVfEnabled] = useState(false)
-	const [wghtMax, setWghtMax] = useState(900)
+	// Container width as % of the demo panel
+	const [widthPct, setWidthPct] = useState(60)
+	// Container height in px (for height/both modes)
+	const [heightPx, setHeightPx] = useState(120)
 
-	// Defer all values that drive the fit so sliders stay responsive under drag.
-	const deferredText = useDeferredValue(text)
-	const deferredMode = useDeferredValue(mode)
-	const deferredMin = useDeferredValue(min)
-	const deferredMax = useDeferredValue(max)
-	const deferredPrecision = useDeferredValue(precision)
-	const deferredPadding = useDeferredValue(padding)
-	const deferredVfEnabled = useDeferredValue(vfEnabled)
-	const deferredWghtMax = useDeferredValue(wghtMax)
+	const dText = useDeferredValue(text)
 
-	const fitOptions: FitFlushOptions = {
-		mode: deferredMode,
-		min: deferredMin,
-		max: deferredMax,
-		precision: deferredPrecision,
-		padding: deferredPadding,
-		...(deferredVfEnabled
-			? { vfSettings: { wght: { max: deferredWghtMax } } }
-			: {}),
+	const containerStyle: React.CSSProperties =
+		mode === "width"
+			? { width: `${widthPct}%`, overflow: "hidden" }
+			: mode === "height"
+			? { width: "100%", height: `${heightPx}px`, overflow: "hidden" }
+			: { width: `${widthPct}%`, height: `${heightPx}px`, overflow: "hidden" }
+
+	const options: FitFlushOptions = {
+		mode,
+		padding,
+		min: 8,
+		max: 400,
 	}
 
+	// Re-mount FittedText when mode changes so options take effect cleanly
+	const modeKey = `${mode}-${widthPct}-${heightPx}-${padding}`
+
 	return (
-		<section className="flex flex-col gap-8">
-			{/* Live preview */}
-			<div
-				className="relative w-full overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]"
-				style={{ minHeight: mode === 'width' ? '12rem' : '20rem' }}
-			>
-				<div className="absolute inset-0 flex items-center justify-center p-6">
-					<FitFlushText
-						as="h2"
-						className="font-serif text-center leading-none"
-						style={{ fontWeight: vfEnabled ? wghtMax : 400 }}
-						{...fitOptions}
+		<div className="flex flex-col gap-8">
+
+			{/* Container visualisation */}
+			<div className="flex flex-col gap-3">
+				<span className="text-xs uppercase tracking-widest opacity-50">Container</span>
+				<div
+					className="w-full flex items-start"
+					style={{ minHeight: mode === "width" ? "80px" : `${heightPx + 16}px` }}
+				>
+					<div
+						className="relative rounded border border-white/20 p-3 transition-all"
+						style={{ ...containerStyle, background: "rgba(255,255,255,0.04)" }}
 					>
-						{deferredText}
-					</FitFlushText>
+						<FittedText key={modeKey} text={dText || "Text"} options={options} />
+					</div>
 				</div>
 			</div>
 
 			{/* Controls */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				{/* Left column — text + mode */}
-				<div className="flex flex-col gap-5">
-					{/* Editable text */}
-					<label className="flex flex-col gap-1">
-						<span className="text-sm text-[var(--color-text-muted)]">
-							Headline text
-						</span>
-						<input
-							type="text"
-							aria-label="Headline text"
-							value={text}
-							onChange={(e) => setText(e.target.value)}
-							className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
-						/>
-					</label>
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
 
-					{/* Mode radio */}
-					<fieldset className="flex flex-col gap-2">
-						<legend className="text-sm text-[var(--color-text-muted)] mb-1">
-							Fit mode
-						</legend>
-						<div className="flex gap-2">
-							{MODES.map((m) => (
-								<button
-									key={m}
-									type="button"
-									onClick={() => setMode(m)}
-									className={`px-3 py-1.5 rounded-lg text-sm font-mono transition-colors ${
-										mode === m
-											? 'bg-[var(--color-accent)] text-[var(--color-bg)]'
-											: 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-accent-dim)]'
-									}`}
-								>
-									{m}
-								</button>
-							))}
-						</div>
-					</fieldset>
-
-					{/* VF toggle */}
-					<label className="flex items-center gap-3 cursor-pointer">
-						<input
-							type="checkbox"
-							aria-label="Enable variable font safety"
-							checked={vfEnabled}
-							onChange={(e) => setVfEnabled(e.target.checked)}
-							className="w-4 h-4 accent-[var(--color-accent)]"
-						/>
-						<span className="text-sm text-[var(--color-text-muted)]">
-							Variable font safety (wght axis)
-						</span>
-					</label>
-
-					{vfEnabled && (
-						<Slider
-							label="wght max"
-							min={100}
-							max={900}
-							step={100}
-							value={wghtMax}
-							onChange={setWghtMax}
-						/>
-					)}
+				{/* Mode */}
+				<div className="flex flex-col gap-2 sm:col-span-2">
+					<span className="uppercase tracking-widest opacity-50">Mode</span>
+					<div className="flex gap-2 flex-wrap">
+						{MODES.map(m => (
+							<button
+								key={m.value}
+								onClick={() => setMode(m.value)}
+								className={`px-3 py-1.5 rounded-full border transition-colors ${
+									mode === m.value
+										? "border-white/60 bg-white/10"
+										: "border-white/20 hover:border-white/40"
+								}`}
+							>
+								{m.label}
+							</button>
+						))}
+					</div>
+					<p className="opacity-40 mt-1">
+						{MODES.find(m => m.value === mode)?.description}
+					</p>
 				</div>
 
-				{/* Right column — numeric sliders */}
-				<div className="flex flex-col gap-5">
-					<Slider
-						label="Min size (px)"
-						min={4}
-						max={100}
-						step={1}
-						value={min}
-						onChange={setMin}
-					/>
-					<Slider
-						label="Max size (px)"
-						min={50}
-						max={800}
-						step={10}
-						value={max}
-						onChange={setMax}
-					/>
-					<Slider
-						label="Precision (px)"
-						min={0.1}
-						max={5}
-						step={0.1}
-						value={precision}
-						onChange={setPrecision}
-					/>
-					<Slider
-						label="Padding (px)"
-						min={0}
-						max={100}
-						step={1}
-						value={padding}
-						onChange={setPadding}
+				{/* Width slider — shown in width/both mode */}
+				{(mode === "width" || mode === "both") && (
+					<div className="flex flex-col gap-2">
+						<span className="uppercase tracking-widest opacity-50">
+							Container width — {widthPct}%
+						</span>
+						<input
+							type="range" min={10} max={100} step={1} value={widthPct}
+							onChange={e => setWidthPct(Number(e.target.value))}
+							aria-label="Container width as percentage"
+							style={{ touchAction: "none" }}
+						/>
+					</div>
+				)}
+
+				{/* Height slider — shown in height/both mode */}
+				{(mode === "height" || mode === "both") && (
+					<div className="flex flex-col gap-2">
+						<span className="uppercase tracking-widest opacity-50">
+							Container height — {heightPx}px
+						</span>
+						<input
+							type="range" min={40} max={300} step={4} value={heightPx}
+							onChange={e => setHeightPx(Number(e.target.value))}
+							aria-label="Container height in pixels"
+							style={{ touchAction: "none" }}
+						/>
+					</div>
+				)}
+
+				{/* Padding */}
+				<div className="flex flex-col gap-2">
+					<span className="uppercase tracking-widest opacity-50">
+						Padding — {padding}px
+					</span>
+					<input
+						type="range" min={0} max={40} step={2} value={padding}
+						onChange={e => setPadding(Number(e.target.value))}
+						aria-label="Container padding in pixels"
+						style={{ touchAction: "none" }}
 					/>
 				</div>
+
+				{/* Text input */}
+				<div className="flex flex-col gap-2">
+					<span className="uppercase tracking-widest opacity-50">Text</span>
+					<input
+						type="text"
+						value={text}
+						onChange={e => setText(e.target.value)}
+						aria-label="Text to fit"
+						className="w-full bg-white/5 rounded px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-white/20"
+					/>
+				</div>
+
 			</div>
-		</section>
+
+			<p className="text-xs opacity-40 italic" style={{ lineHeight: "1.8" }}>
+				Drag the sliders to resize the container. The text recalculates its font-size
+				every frame via ResizeObserver — no rerenders, no style recalculations
+				outside the target element.
+			</p>
+		</div>
 	)
 }
