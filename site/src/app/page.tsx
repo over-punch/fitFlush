@@ -23,7 +23,7 @@ export default function Home() {
 				</div>
 				<div className="flex items-center gap-4">
 					<CopyInstall />
-					<a href="https://github.com/Liiift-Studio/FitFlush" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub</a>
+					<a href="https://github.com/Liiift-Studio/fitFlush" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub</a>
 				</div>
 				<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs opacity-50 tracking-wide">
 					<span>TypeScript</span><span>&middot;</span><span>Zero dependencies</span><span>&middot;</span><span>React + Vanilla JS</span>

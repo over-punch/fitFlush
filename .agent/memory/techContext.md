@@ -42,5 +42,5 @@ The wider Liiift stack is Next.js-only. Keeping the build surface small means fe
 
 ## Git remotes (set up after initial commit)
 
-- `origin` — https://github.com/Liiift-Studio/FitFlush.git
-- `deploy` — git@github-liiift:Liiift-Studio/FitFlush.git (SSH alias, triggers Vercel)
+- `origin` — https://github.com/Liiift-Studio/fitFlush.git
+- `deploy` — git@github-liiift:Liiift-Studio/fitFlush.git (SSH alias, triggers Vercel)

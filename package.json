@@ -19,7 +19,7 @@
 	"homepage": "https://fit-flush.com",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Liiift-Studio/FitFlush.git"
+		"url": "https://github.com/Liiift-Studio/fitFlush.git"
 	},
 	"author": "Liiift Studio <hello@liiift.studio>",
 	"type": "module",

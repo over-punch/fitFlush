@@ -4,7 +4,7 @@
 Initial bootstrap of fit-flush as a new submodule under type-tools. v0.0.1.
 
 ## Recent changes
-- 2026-04-10: Created `Liiift-Studio/FitFlush` GitHub repo (auto-README)
+- 2026-04-10: Created `Liiift-Studio/fitFlush` GitHub repo (auto-README)
 - 2026-04-10: Added as submodule at `type-tools/fitFlush`
 - 2026-04-10: Scaffolded full repo — src (core + react), tests, configs, site stub, agent memory, README, PROCESS.md
 - 2026-04-10: Stack decision — dropped Vite/Vitest in favour of `tsc` for library build and Jest + `@happy-dom/jest-environment` + `@swc/jest` for tests, matching the "Next.js only" stack direction

@@ -3,7 +3,7 @@ V1.0
 
 **Fit text to its container.** Binary-search sizing with variable-font axis safety, for the rare case neither `clamp()` nor container-query units will do the job.
 
-[Site](https://fit-flush.com) · [npm](https://www.npmjs.com/package/@liiift-studio/fit-flush) · [GitHub](https://github.com/Liiift-Studio/FitFlush)
+[Site](https://fit-flush.com) · [npm](https://www.npmjs.com/package/@liiift-studio/fit-flush) · [GitHub](https://github.com/Liiift-Studio/fitFlush)
 
 TypeScript · Zero runtime dependencies · React + Vanilla JS
 
