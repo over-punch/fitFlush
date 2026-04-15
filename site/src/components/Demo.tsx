@@ -1,6 +1,6 @@
 "use client"
 
-// fitFlush demo — interactive text fitting with live font-size readout
+// fitFlush demo — interactive text fitting with per-axis fill and container controls
 import { useState, useEffect, useRef, useDeferredValue, useCallback } from "react"
 import { useFitFlush } from "@liiift-studio/fit-flush"
 import type { FitFlushOptions } from "@liiift-studio/fit-flush"
@@ -10,7 +10,7 @@ const DEFAULT_TEXT_MULTI = "The quick brown fox jumps over the lazy dog while th
 const DEMO_FONT = "var(--font-sans)"
 
 /**
- * Inner component that uses the hook — needs to re-mount when options change
+ * Inner component that uses the hook — re-mounts when mode or fill changes
  * so the ResizeObserver re-runs with fresh options.
  */
 function FittedText({
@@ -77,53 +77,93 @@ function FittedText({
 	)
 }
 
+/** Labeled range slider used throughout the controls panel. */
+function Slider({
+	label,
+	value,
+	min,
+	max,
+	step,
+	suffix,
+	ariaLabel,
+	onChange,
+}: {
+	label: string
+	value: number
+	min: number
+	max: number
+	step: number
+	suffix: string
+	ariaLabel: string
+	onChange: (v: number) => void
+}) {
+	return (
+		<div className="flex flex-col gap-2">
+			<span className="uppercase tracking-widest opacity-50">
+				{label} — {value}{suffix}
+			</span>
+			<input
+				type="range" min={min} max={max} step={step} value={value}
+				onChange={e => onChange(Number(e.target.value))}
+				aria-label={ariaLabel}
+				style={{ touchAction: "none" }}
+			/>
+		</div>
+	)
+}
+
 export default function Demo() {
 	const [text,      setText]      = useState(DEFAULT_TEXT_SINGLE)
 	const [multiLine, setMultiLine] = useState(false)
 	// Track whether the user has manually edited the text
 	const [userEdited, setUserEdited] = useState(false)
-	// Fill percentage — how much of the container the text should fill (50–100%)
-	const [fillPct,   setFillPct]   = useState(100)
-	// Container height in px (for multi-line mode)
+	// Per-axis fill percentage (50–100%)
+	const [fillX,     setFillX]     = useState(100)
+	const [fillY,     setFillY]     = useState(100)
+	// Container dimensions
+	const [widthPct,  setWidthPct]  = useState(100)
 	const [heightPx,  setHeightPx]  = useState(160)
 	// Computed font-size readout
 	const [fontSize,  setFontSize]  = useState("")
-	// Container pixel width measured via ResizeObserver
-	const [containerPx, setContainerPx] = useState(0)
+	// Measured container pixel dimensions via ResizeObserver
+	const [containerPx,  setContainerPx]  = useState(0)
+	const [containerHPx, setContainerHPx] = useState(0)
 	const containerRef = useRef<HTMLDivElement>(null)
 
 	const dText = useDeferredValue(text)
 
-	// Measure container pixel width so fill% can convert to pixel padding
+	// Measure container pixel dimensions for fill% → padding conversion
 	useEffect(() => {
 		const el = containerRef.current
 		if (!el) return
 		const ro = new ResizeObserver((entries) => {
 			setContainerPx(entries[0].contentRect.width)
+			setContainerHPx(entries[0].contentRect.height)
 		})
 		ro.observe(el)
 		return () => ro.disconnect()
 	}, [])
 
-	// Convert fill% to pixel padding: at 100% → 0px, at 50% → 25% of container each side
-	const padX = containerPx > 0 ? containerPx * (100 - fillPct) / 200 : 0
+	// Convert fill% to pixel padding per axis
+	const padX = containerPx  > 0 ? containerPx  * (100 - fillX) / 200 : 0
+	const padY = containerHPx > 0 ? containerHPx * (100 - fillY) / 200 : 0
 
 	const mode = multiLine ? "both" : "width"
 
 	const containerStyle: React.CSSProperties = multiLine
-		? { width: "100%", height: `${heightPx}px`, overflow: "hidden" }
-		: { width: "100%", overflow: "hidden" }
+		? { width: `${widthPct}%`, height: `${heightPx}px`, overflow: "hidden" }
+		: { width: `${widthPct}%`, overflow: "hidden" }
 
 	const options: FitFlushOptions = {
 		mode,
-		padding: { x: padX, y: 0 },
+		padding: { x: padX, y: padY },
 		min: 8,
 		max: 400,
 	}
 
-	// Re-mount FittedText when mode or fill changes; height changes are
-	// handled by the ResizeObserver inside useFitFlush (no remount needed).
-	const modeKey = `${mode}-${fillPct}`
+	// Re-mount FittedText when mode or fill changes; container dimension
+	// changes are handled by the ResizeObserver (no remount needed).
+	const modeKey = `${mode}-${fillX}-${fillY}`
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -145,7 +185,7 @@ export default function Demo() {
 				>
 					<div
 						ref={containerRef}
-						className="relative rounded border border-white/20 w-full"
+						className="relative rounded border border-white/20"
 						style={{ ...containerStyle, background: "rgba(255,255,255,0.04)" }}
 					>
 						<FittedText
@@ -174,7 +214,7 @@ export default function Demo() {
 					/>
 				</div>
 
-				{/* Multi-line toggle */}
+				{/* Single-line / Multi-line toggle */}
 				<div className="flex flex-col gap-2 sm:col-span-2">
 					<div className="flex gap-2">
 						<button
@@ -211,39 +251,39 @@ export default function Demo() {
 					</p>
 				</div>
 
-				{/* Fill slider */}
-				<div className="flex flex-col gap-2">
-					<span className="uppercase tracking-widest opacity-50">
-						Fill — {fillPct}%
-					</span>
-					<input
-						type="range" min={50} max={100} step={1} value={fillPct}
-						onChange={e => setFillPct(Number(e.target.value))}
-						aria-label="Text fill percentage"
-						style={{ touchAction: "none" }}
-					/>
-				</div>
-
-				{/* Height slider — shown in multi-line mode */}
+				{/* Container section */}
+				<Slider
+					label="Container width" value={widthPct} min={30} max={100} step={1}
+					suffix="%" ariaLabel="Container width as percentage"
+					onChange={setWidthPct}
+				/>
 				{multiLine && (
-					<div className="flex flex-col gap-2">
-						<span className="uppercase tracking-widest opacity-50">
-							Container height — {heightPx}px
-						</span>
-						<input
-							type="range" min={40} max={300} step={4} value={heightPx}
-							onChange={e => setHeightPx(Number(e.target.value))}
-							aria-label="Container height in pixels"
-							style={{ touchAction: "none" }}
-						/>
-					</div>
+					<Slider
+						label="Container height" value={heightPx} min={40} max={400} step={4}
+						suffix="px" ariaLabel="Container height in pixels"
+						onChange={setHeightPx}
+					/>
+				)}
+
+				{/* Fill section */}
+				<Slider
+					label="Fill X" value={fillX} min={50} max={100} step={1}
+					suffix="%" ariaLabel="Horizontal text fill percentage"
+					onChange={setFillX}
+				/>
+				{multiLine && (
+					<Slider
+						label="Fill Y" value={fillY} min={50} max={100} step={1}
+						suffix="%" ariaLabel="Vertical text fill percentage"
+						onChange={setFillY}
+					/>
 				)}
 
 			</div>
 
 			<p className="text-xs opacity-40 italic" style={{ lineHeight: "1.8" }}>
-				Type to see the font-size adapt. The size recalculates every frame
-				via ResizeObserver — no rerenders.
+				Resize the container or adjust fill to see the font-size adapt.
+				The size recalculates every frame via ResizeObserver.
 			</p>
 		</div>
 	)

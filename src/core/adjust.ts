@@ -53,19 +53,8 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 	const innerWidth = Math.max(0, cRect.width - cssPadL - cssPadR - cssBdrL - cssBdrR - 2 * pad.x)
 	const innerHeight = Math.max(0, cRect.height - cssPadT - cssPadB - cssBdrT - cssBdrB - 2 * pad.y)
 
-	console.log('[fitFlush]', {
-		mode,
-		bcrW: cRect.width,
-		bcrH: cRect.height,
-		cssPad: { L: cssPadL, R: cssPadR, T: cssPadT, B: cssPadB },
-		cssBdr: { L: cssBdrL, R: cssBdrR, T: cssBdrT, B: cssBdrB },
-		optionPad: pad,
-		innerWidth,
-		innerHeight,
-	})
-
-	if (innerWidth <= 0) { console.warn('[fitFlush] Bailing: innerWidth <= 0'); return min }
-	if (mode !== 'width' && innerHeight <= 0) { console.warn('[fitFlush] Bailing: innerHeight <= 0'); return min }
+	if (innerWidth <= 0) return min
+	if (mode !== 'width' && innerHeight <= 0) return min
 
 	const text = target.textContent ?? ''
 	if (text.length === 0) return min
@@ -84,8 +73,6 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 	} else {
 		size = binarySearchFit(probe, mode, innerWidth, innerHeight, min, max, precision)
 	}
-
-	console.log('[fitFlush] Result:', { mode, size, innerWidth, innerHeight })
 
 	// Write — target gets the computed size.
 	target.style.fontSize = `${size}px`
