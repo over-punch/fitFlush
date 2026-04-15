@@ -10,7 +10,7 @@ const useIsomorphicLayoutEffect =
 
 /**
  * React hook that fits text inside the ref'd element to its parent container.
- * Re-runs on container resize (width-only) and after web fonts load.
+ * Re-runs on container resize (width + height) and after web fonts load.
  * Cleans up observers on unmount.
  */
 export function useFitFlush<T extends HTMLElement = HTMLElement>(
@@ -32,6 +32,7 @@ export function useFitFlush<T extends HTMLElement = HTMLElement>(
 		if (!el) return
 
 		let lastWidth = 0
+		let lastHeight = 0
 		let rafId = 0
 		let cancelled = false
 
@@ -47,8 +48,10 @@ export function useFitFlush<T extends HTMLElement = HTMLElement>(
 		if (container && typeof ResizeObserver !== 'undefined') {
 			ro = new ResizeObserver((entries) => {
 				const w = Math.round(entries[0].contentRect.width)
-				if (w === lastWidth) return
+				const h = Math.round(entries[0].contentRect.height)
+				if (w === lastWidth && h === lastHeight) return
 				lastWidth = w
+				lastHeight = h
 				cancelAnimationFrame(rafId)
 				rafId = requestAnimationFrame(run)
 			})

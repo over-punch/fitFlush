@@ -39,12 +39,33 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 	const scrollY = window.scrollY
 
 	// Batch-read container dimensions once — no interleaved reads and writes.
+	// Subtract CSS padding + border from the BCR (border-box) to get content-box.
 	const cRect = container.getBoundingClientRect()
-	const innerWidth = Math.max(0, cRect.width - 2 * pad.x)
-	const innerHeight = Math.max(0, cRect.height - 2 * pad.y)
+	const containerCS = window.getComputedStyle(container)
+	const cssPadL = parseFloat(containerCS.paddingLeft) || 0
+	const cssPadR = parseFloat(containerCS.paddingRight) || 0
+	const cssPadT = parseFloat(containerCS.paddingTop) || 0
+	const cssPadB = parseFloat(containerCS.paddingBottom) || 0
+	const cssBdrL = parseFloat(containerCS.borderLeftWidth) || 0
+	const cssBdrR = parseFloat(containerCS.borderRightWidth) || 0
+	const cssBdrT = parseFloat(containerCS.borderTopWidth) || 0
+	const cssBdrB = parseFloat(containerCS.borderBottomWidth) || 0
+	const innerWidth = Math.max(0, cRect.width - cssPadL - cssPadR - cssBdrL - cssBdrR - 2 * pad.x)
+	const innerHeight = Math.max(0, cRect.height - cssPadT - cssPadB - cssBdrT - cssBdrB - 2 * pad.y)
 
-	if (innerWidth <= 0) return min
-	if (mode !== 'width' && innerHeight <= 0) return min
+	console.log('[fitFlush]', {
+		mode,
+		bcrW: cRect.width,
+		bcrH: cRect.height,
+		cssPad: { L: cssPadL, R: cssPadR, T: cssPadT, B: cssPadB },
+		cssBdr: { L: cssBdrL, R: cssBdrR, T: cssBdrT, B: cssBdrB },
+		optionPad: pad,
+		innerWidth,
+		innerHeight,
+	})
+
+	if (innerWidth <= 0) { console.warn('[fitFlush] Bailing: innerWidth <= 0'); return min }
+	if (mode !== 'width' && innerHeight <= 0) { console.warn('[fitFlush] Bailing: innerHeight <= 0'); return min }
 
 	const text = target.textContent ?? ''
 	if (text.length === 0) return min
@@ -64,8 +85,11 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 		size = binarySearchFit(probe, mode, innerWidth, innerHeight, min, max, precision)
 	}
 
+	console.log('[fitFlush] Result:', { mode, size, innerWidth, innerHeight })
+
 	// Write — target gets the computed size.
 	target.style.fontSize = `${size}px`
+	target.style.whiteSpace = mode === 'width' ? 'nowrap' : ''
 
 	// Dispose probe.
 	probe.remove()
@@ -97,6 +121,7 @@ export function fitFlushLive(
 	}
 
 	const originalFontSize = target.style.fontSize
+	const originalWhiteSpace = target.style.whiteSpace
 	let currentSize = 0
 	let disposed = false
 
@@ -108,16 +133,19 @@ export function fitFlushLive(
 
 	currentSize = run()
 
-	// ResizeObserver on the container — width-only dedup to avoid thrashing.
+	// ResizeObserver on the container — dedup by width+height to avoid thrashing.
 	const container = options.container ?? target.parentElement
 	let lastWidth = 0
+	let lastHeight = 0
 	let rafId = 0
 	let ro: ResizeObserver | null = null
 	if (container && typeof ResizeObserver !== 'undefined') {
 		ro = new ResizeObserver((entries) => {
 			const w = Math.round(entries[0].contentRect.width)
-			if (w === lastWidth) return
+			const h = Math.round(entries[0].contentRect.height)
+			if (w === lastWidth && h === lastHeight) return
 			lastWidth = w
+			lastHeight = h
 			if (typeof cancelAnimationFrame !== 'undefined') cancelAnimationFrame(rafId)
 			rafId =
 				typeof requestAnimationFrame !== 'undefined'
@@ -143,6 +171,7 @@ export function fitFlushLive(
 			ro?.disconnect()
 			if (typeof cancelAnimationFrame !== 'undefined') cancelAnimationFrame(rafId)
 			target.style.fontSize = originalFontSize
+			target.style.whiteSpace = originalWhiteSpace
 		},
 	}
 }

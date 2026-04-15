@@ -14,7 +14,6 @@ const COPIED_STYLE_PROPS = [
 	'letter-spacing',
 	'word-spacing',
 	'text-transform',
-	'line-height',
 	'font-kerning',
 ] as const
 
@@ -33,6 +32,19 @@ export function createProbe(target: HTMLElement, text: string): HTMLElement {
 	for (const prop of COPIED_STYLE_PROPS) {
 		const value = computed.getPropertyValue(prop)
 		if (value) probe.style.setProperty(prop, value)
+	}
+
+	// line-height needs special handling: getComputedStyle resolves unitless
+	// values (e.g. 1.1) to pixels (e.g. "440px" at 400px font-size). A fixed
+	// pixel line-height doesn't scale with the probe's font-size changes,
+	// breaking the binary search. Convert back to a unitless ratio.
+	const computedLH = computed.getPropertyValue('line-height')
+	if (computedLH && computedLH !== 'normal') {
+		const lhPx = parseFloat(computedLH)
+		const fsPx = parseFloat(computed.fontSize) || 16
+		if (lhPx > 0 && fsPx > 0) {
+			probe.style.lineHeight = String(lhPx / fsPx)
+		}
 	}
 
 	const s = probe.style
@@ -65,7 +77,13 @@ export function configureProbe(
 	}
 }
 
-/** Does the probe's current rendered box fit within the inner container bounds? */
+/**
+ * Does the probe's current rendered box fit within the inner container bounds?
+ * For height/both modes the probe's CSS width is already set to innerWidth,
+ * so text wraps within that constraint — only height needs checking. Comparing
+ * the probe's BCR width against innerWidth would cause false negatives from
+ * sub-pixel rounding of the CSS width the browser itself set.
+ */
 export function fits(
 	probe: HTMLElement,
 	mode: 'width' | 'height' | 'both',
@@ -74,8 +92,8 @@ export function fits(
 ): boolean {
 	const rect = probe.getBoundingClientRect()
 	if (mode === 'width') return rect.width <= innerWidth
-	if (mode === 'height') return rect.height <= innerHeight
-	return rect.width <= innerWidth && rect.height <= innerHeight
+	// height and both: probe CSS width enforces wrapping, only check height.
+	return rect.height <= innerHeight
 }
 
 /**

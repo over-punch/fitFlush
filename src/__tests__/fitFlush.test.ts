@@ -70,15 +70,16 @@ describe('fitFlush — mode: height', () => {
 })
 
 describe('fitFlush — mode: both', () => {
-	it('respects the stricter of width and height constraints', () => {
-		// width: 5*size <= 100 → size <= 20
-		// height: 1.2*size <= 240 → size <= 200
-		// both → 20 wins
+	it('wraps text within container width and fits height', () => {
+		// 10 chars in 100px container: text wraps. At ~60px font-size,
+		// intrinsic width = 300 → 3 lines → height = 3 * 60 * 1.2 = 216 < 240. Fits.
+		// At ~67px: intrinsic = 335 → 4 lines → height = 4 * 67 * 1.2 = 321 > 240. Too tall.
+		// Binary search converges around 59–60px.
 		mockMeasurement({ containerWidth: 100, containerHeight: 240 })
 		const { target } = setupDOM('abcdefghij')
 		const size = fitFlush(target, { mode: 'both', min: 8, max: 400 })
-		expect(size).toBeGreaterThan(19)
-		expect(size).toBeLessThanOrEqual(20)
+		expect(size).toBeGreaterThan(55)
+		expect(size).toBeLessThanOrEqual(66)
 	})
 })
 
@@ -136,6 +137,76 @@ describe('fitFlush — edge cases', () => {
 		const { target } = setupDOM('text')
 		const size = fitFlush(target, { mode: 'width' })
 		expect(target.style.fontSize).toBe(`${size}px`)
+	})
+})
+
+describe('fitFlush — CSS padding/border subtraction', () => {
+	it('subtracts container CSS padding from available width', () => {
+		// Container BCR = 500, but 20px padding each side → content = 460
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { container, target } = setupDOM('abcdefghij')
+		container.style.padding = '20px'
+		const withPadding = fitFlush(target, { mode: 'width' })
+		container.style.padding = '0px'
+		const without = fitFlush(target, { mode: 'width' })
+		expect(withPadding).toBeLessThan(without)
+	})
+
+	it('subtracts container CSS border from available width', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { container, target } = setupDOM('abcdefghij')
+		container.style.border = '10px solid black'
+		const withBorder = fitFlush(target, { mode: 'width' })
+		container.style.border = '0px solid black'
+		const without = fitFlush(target, { mode: 'width' })
+		expect(withBorder).toBeLessThan(without)
+	})
+
+	it('subtracts container CSS padding from available height', () => {
+		mockMeasurement({ containerWidth: 1000, containerHeight: 240 })
+		const { container, target } = setupDOM('text')
+		container.style.padding = '20px'
+		const withPadding = fitFlush(target, { mode: 'height', precision: 0.5 })
+		container.style.padding = '0px'
+		const without = fitFlush(target, { mode: 'height', precision: 0.5 })
+		expect(withPadding).toBeLessThan(without)
+	})
+})
+
+describe('fitFlush — whiteSpace management', () => {
+	it('sets whiteSpace to nowrap in width mode', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('Hello world')
+		fitFlush(target, { mode: 'width' })
+		expect(target.style.whiteSpace).toBe('nowrap')
+	})
+
+	it('clears whiteSpace in height mode', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('Hello world')
+		target.style.whiteSpace = 'nowrap'
+		fitFlush(target, { mode: 'height' })
+		expect(target.style.whiteSpace).toBe('')
+	})
+
+	it('clears whiteSpace in both mode', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('Hello world')
+		target.style.whiteSpace = 'nowrap'
+		fitFlush(target, { mode: 'both' })
+		expect(target.style.whiteSpace).toBe('')
+	})
+})
+
+describe('fitFlushLive — whiteSpace restore', () => {
+	it('dispose restores the original whiteSpace', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('hi')
+		target.style.whiteSpace = 'pre-wrap'
+		const handle = fitFlushLive(target, { mode: 'width' })
+		expect(target.style.whiteSpace).toBe('nowrap')
+		handle.dispose()
+		expect(target.style.whiteSpace).toBe('pre-wrap')
 	})
 })
 

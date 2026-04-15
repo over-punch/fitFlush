@@ -40,7 +40,17 @@ export function mockMeasurement(dims: MockDims) {
 			const sizeStr = el.style.fontSize || '0px'
 			const size = parseFloat(sizeStr) || 0
 			const text = el.textContent ?? ''
-			return { w: probeWidth(size, text), h: probeHeight(size, text) }
+			const intrinsicW = probeWidth(size, text)
+			const lineH = probeHeight(size, text)
+			// Simulate wrapping: when the probe has an explicit CSS width and
+			// white-space is not nowrap, text wraps and height grows with lines.
+			const explicitW = parseFloat(el.style.width)
+			const isWrapping = el.style.whiteSpace !== 'nowrap' && explicitW > 0
+			if (isWrapping && intrinsicW > explicitW) {
+				const lines = Math.ceil(intrinsicW / explicitW)
+				return { w: explicitW, h: lineH * lines }
+			}
+			return { w: intrinsicW, h: lineH }
 		}
 		return { w: containerWidth, h: containerHeight }
 	}
