@@ -1,4 +1,4 @@
-V1.0
+V1.1
 # fit-flush
 
 **Fit text to its container.** Binary-search sizing with variable-font axis safety, for the rare case neither `clamp()` nor container-query units will do the job.
