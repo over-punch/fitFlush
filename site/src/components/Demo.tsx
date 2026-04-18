@@ -44,8 +44,7 @@ function FittedText({
 				observerRef.current = null
 			}
 
-			if (typeof ref === "function") ref(el)
-			else if (ref) (ref as React.MutableRefObject<HTMLParagraphElement | null>).current = el
+			if (ref) (ref as React.MutableRefObject<HTMLParagraphElement | null>).current = el
 
 			if (!el) return
 
