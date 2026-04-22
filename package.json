@@ -1,19 +1,32 @@
 {
 	"name": "@liiift-studio/fit-flush",
 	"version": "1.0.0",
-	"description": "Fit text size to its container with binary-search precision and variable-font safety.",
+	"description": "Binary-search font-size fitting — lock any text to its container width, height, or both, with variable-font axis safety",
 	"keywords": [
 		"typography",
+		"web-typography",
+		"frontend",
+		"liiift-studio",
 		"typographic",
 		"font-size",
 		"fit",
+		"fit-text",
+		"text-fit",
+		"auto-fit",
 		"container",
-		"variable-fonts",
+		"fluid-type",
+		"responsive-type",
 		"responsive",
 		"headline",
+		"display-type",
 		"editorial",
-		"text-fit",
-		"fit-text"
+		"variable-font",
+		"variable-fonts",
+		"binary-search",
+		"zero-dependencies",
+		"react",
+		"typescript",
+		"css"
 	],
 	"license": "MIT",
 	"homepage": "https://fit-flush.com",
@@ -21,7 +34,10 @@
 		"type": "git",
 		"url": "https://github.com/Liiift-Studio/fitFlush.git"
 	},
-	"author": "Liiift Studio <hello@liiift.studio>",
+	"bugs": {
+		"url": "https://github.com/Liiift-Studio/fitFlush/issues"
+	},
+	"author": "Quinn Keaveney <quinn@liiift.studio>",
 	"type": "module",
 	"main": "./dist/index.js",
 	"module": "./dist/index.js",
@@ -36,6 +52,9 @@
 		"dist"
 	],
 	"sideEffects": false,
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "tsc -p tsconfig.build.json",
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
