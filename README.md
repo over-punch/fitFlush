@@ -1,6 +1,8 @@
 V1.1
 # fit-flush
 
+[![npm](https://img.shields.io/npm/v/%40liiift-studio%2Ffit-flush.svg)](https://www.npmjs.com/package/@liiift-studio/fit-flush) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![part of liiift type-tools](https://img.shields.io/badge/liiift-type--tools-blueviolet)](https://github.com/Liiift-Studio/type-tools)
+
 **Fit text to its container.** Binary-search sizing with variable-font axis safety, for the rare case neither `clamp()` nor container-query units will do the job.
 
 [Site](https://fit-flush.com) · [npm](https://www.npmjs.com/package/@liiift-studio/fit-flush) · [GitHub](https://github.com/Liiift-Studio/fitFlush)
