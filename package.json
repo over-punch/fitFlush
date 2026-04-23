@@ -1,6 +1,6 @@
 {
 	"name": "@liiift-studio/fit-flush",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Binary-search font-size fitting — lock any text to its container width, height, or both, with variable-font axis safety",
 	"keywords": [
 		"typography",
