@@ -90,6 +90,8 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 		})
 	}
 
+	options.onFit?.(size)
+
 	return size
 }
 

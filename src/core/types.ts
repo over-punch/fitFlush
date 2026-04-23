@@ -33,6 +33,9 @@ export interface FitFlushOptions {
 
 	/** Optional container override. Defaults to `target.parentElement`. */
 	container?: HTMLElement | null
+
+	/** Called after every successful fit with the computed font-size in px. */
+	onFit?: (size: number) => void
 }
 
 /**
