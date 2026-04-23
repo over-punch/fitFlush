@@ -126,6 +126,7 @@ const size: number = fitFlush(document.querySelector<HTMLElement>("h1")!, option
 | `padding` | `number \| { x?, y? }` | `0` | Inset from container edges in px. A single number insets both axes. |
 | `vfSettings` | `Record<string, { max: number }>` | — | Variable-font axis ranges. When present, measurement runs at every axis' `max` for worst-case safety. |
 | `container` | `HTMLElement` | `target.parentElement` | Override the container used for measurement. |
+| `onFit` | `(size: number) => void` | — | Callback fired after each fit calculation, receiving the resolved font-size or tracking value. |
 
 ---
 
