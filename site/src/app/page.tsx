@@ -29,7 +29,7 @@ export default function Home() {
 					<span>TypeScript</span><span>&middot;</span><span>Zero dependencies</span><span>&middot;</span><span>React + Vanilla JS</span>
 				</div>
 				<p className="text-base opacity-60 leading-relaxed max-w-lg">
-					CSS can&apos;t scale a font to fill a container — <code className="text-xs font-mono">font-size</code> doesn&apos;t know where to stop. Fit Flush binary-searches the right size to within half a pixel, with variable-font safety built in.
+					CSS can&rsquo;t scale a font to fill a container — <code className="text-xs font-mono">font-size</code> doesn&rsquo;t know where to stop. Fit Flush binary-searches the right size to within half a pixel, with variable-font safety built in.
 				</p>
 			</section>
 
@@ -46,8 +46,8 @@ export default function Home() {
 				<p className="text-xs uppercase tracking-widest opacity-50">How it works</p>
 				<div className="prose-grid grid grid-cols-1 sm:grid-cols-2 gap-12 text-sm leading-relaxed opacity-70">
 					<div className="flex flex-col gap-3">
-						<p className="font-semibold opacity-100 text-base">CSS can&apos;t fit a font size</p>
-						<p>There&apos;s no CSS property that says &ldquo;make this text as large as it can be while staying inside its container.&rdquo; <code className="text-xs font-mono">clamp()</code> just rescales, and <code className="text-xs font-mono">vw</code> units don&apos;t know about your layout. You need measurement.</p>
+						<p className="font-semibold opacity-100 text-base">CSS can&rsquo;t fit a font size</p>
+						<p>There&rsquo;s no CSS property that says &ldquo;make this text as large as it can be while staying inside its container.&rdquo; <code className="text-xs font-mono">clamp()</code> just rescales, and <code className="text-xs font-mono">vw</code> units don&rsquo;t know about your layout. You need measurement.</p>
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="font-semibold opacity-100 text-base">Binary search in 15–20 steps</p>
