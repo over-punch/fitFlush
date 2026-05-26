@@ -6,6 +6,7 @@ import CodeBlock from "@/components/CodeBlock"
 import SiteFooter from "@/components/SiteFooter"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
+import { MagnetChar } from "@liiift-studio/magnettype"
 
 /** Landing page with hero demo, install command, and code examples. */
 export default function Home() {
@@ -17,8 +18,8 @@ export default function Home() {
 				<div className="flex flex-col gap-2">
 					<p className="text-xs uppercase tracking-widest opacity-50">fitFlush</p>
 					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 300, "opsz" 144', lineHeight: "1.05em" }}>
-						Fit text to<br />
-						<span style={{ opacity: 0.5, fontStyle: "italic" }}>any container.</span>
+						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }}>Fit text to</MagnetChar><br />
+						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }} style={{ opacity: 0.5, fontStyle: "italic" }}>any container.</MagnetChar>
 					</h1>
 				</div>
 				<div className="flex items-center gap-4">
