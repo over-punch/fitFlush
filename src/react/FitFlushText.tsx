@@ -2,6 +2,7 @@
 
 import {
 	forwardRef,
+	useCallback,
 	type AriaAttributes,
 	type CSSProperties,
 	type ElementType,
@@ -47,14 +48,16 @@ export const FitFlushText = forwardRef<HTMLElement, FitFlushTextProps>(
 		})
 
 		// Merge forwarded ref with internal hook ref — both must point to the same node.
-		const setRef = (node: HTMLElement | null) => {
+		// Memoised so the callback ref identity stays stable across renders, preventing
+		// React from calling the old ref with null + new ref with node on every render.
+		const setRef = useCallback((node: HTMLElement | null) => {
 			;(innerRef as { current: HTMLElement | null }).current = node
 			if (typeof forwardedRef === 'function') {
 				forwardedRef(node)
 			} else if (forwardedRef) {
 				;(forwardedRef as { current: HTMLElement | null }).current = node
 			}
-		}
+		}, [forwardedRef]) // innerRef is a stable React ref object
 
 		return (
 			<Tag
