@@ -58,13 +58,7 @@ export function useFitFlush<T extends HTMLElement = HTMLElement>(
 			ro.observe(container)
 		}
 
-		if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
-			document.fonts.ready
-				.then(() => {
-					if (!cancelled) run()
-				})
-				.catch(() => {})
-		}
+		document.fonts?.ready?.then(() => { if (!cancelled) run() }).catch(() => {})
 
 		return () => {
 			cancelled = true

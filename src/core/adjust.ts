@@ -145,9 +145,7 @@ export function fitFlushLive(
 	}
 
 	// Re-run after fonts load — measurement before font swap gives wrong widths.
-	if (document.fonts && document.fonts.ready) {
-		document.fonts.ready.then(run).catch(() => {})
-	}
+	document.fonts?.ready?.then(run).catch(() => {})
 
 	return {
 		get size() {
