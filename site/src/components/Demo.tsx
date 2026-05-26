@@ -55,6 +55,7 @@ function Slider({
 	step,
 	suffix,
 	ariaLabel,
+	title,
 	onChange,
 }: {
 	label: string
@@ -64,6 +65,7 @@ function Slider({
 	step: number
 	suffix: string
 	ariaLabel: string
+	title?: string
 	onChange: (v: number) => void
 }) {
 	return (
@@ -75,6 +77,7 @@ function Slider({
 				type="range" min={min} max={max} step={step} value={value}
 				onChange={e => onChange(Number(e.target.value))}
 				aria-label={ariaLabel}
+				title={title}
 				style={{ touchAction: "pan-y" }}
 			/>
 		</div>
@@ -179,6 +182,7 @@ export default function Demo() {
 						value={text}
 						onChange={e => { setText(e.target.value); setUserEdited(true) }}
 						aria-label="Text to fit"
+						title="Type any text to see fitFlush scale it flush to the container"
 						className="w-full bg-white/5 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-white/20"
 					/>
 				</div>
@@ -191,6 +195,7 @@ export default function Demo() {
 								setMultiLine(false)
 								if (!userEdited) setText(DEFAULT_TEXT_SINGLE)
 							}}
+							title="Fit text on a single line — font-size scales so the text spans the full container width"
 							className={`px-3 py-1.5 rounded-full border transition-colors ${
 								!multiLine
 									? "border-white/60 bg-white/10"
@@ -204,6 +209,7 @@ export default function Demo() {
 								setMultiLine(true)
 								if (!userEdited) setText(DEFAULT_TEXT_MULTI)
 							}}
+							title="Allow text to wrap across multiple lines — font-size scales to fill the container area"
 							className={`px-3 py-1.5 rounded-full border transition-colors ${
 								multiLine
 									? "border-white/60 bg-white/10"
@@ -224,12 +230,14 @@ export default function Demo() {
 				<Slider
 					label="Container width" value={widthPct} min={30} max={100} step={1}
 					suffix="%" ariaLabel="Container width as percentage"
+					title="Resize the container width — the font-size recalculates instantly to stay flush"
 					onChange={setWidthPct}
 				/>
 				{multiLine && (
 					<Slider
 						label="Container height" value={heightPx} min={40} max={400} step={4}
 						suffix="px" ariaLabel="Container height in pixels"
+						title="Resize the container height — the font-size recalculates to fill the new area"
 						onChange={setHeightPx}
 					/>
 				)}
@@ -238,12 +246,14 @@ export default function Demo() {
 				<Slider
 					label="Fill X" value={fillX} min={50} max={100} step={1}
 					suffix="%" ariaLabel="Horizontal text fill percentage"
+					title="Horizontal fill — 100% means the text spans the full container width; lower values add breathing room on each side"
 					onChange={setFillX}
 				/>
 				{multiLine && (
 					<Slider
 						label="Fill Y" value={fillY} min={50} max={100} step={1}
 						suffix="%" ariaLabel="Vertical text fill percentage"
+						title="Vertical fill — 100% means the text spans the full container height; lower values add breathing room above and below"
 						onChange={setFillY}
 					/>
 				)}
