@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 		description: "Binary-search font-size fitting with variable-font axis safety. Makes any text fill its container exactly.",
 	},
 	metadataBase: new URL("https://fit-flush.com"),
+	alternates: { canonical: "https://fit-flush.com" },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

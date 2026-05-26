@@ -126,6 +126,7 @@ handle.dispose() // restore original fontSize`} />
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">padding</td><td className="py-2 pr-6">0</td><td className="py-2">Inset from container edges in px. Number = all sides; <code className="font-mono">{`{ x, y }`}</code> = per-axis.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">vfSettings</td><td className="py-2 pr-6">—</td><td className="py-2">Variable-font axis ranges. Measurement uses each axis at its <code className="font-mono">max</code> for worst-case safety.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">container</td><td className="py-2 pr-6">parentElement</td><td className="py-2">Override the container element used for dimension measurement.</td></tr>
+								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">onFit</td><td className="py-2 pr-6">—</td><td className="py-2">Callback fired after each fit calculation, receiving the resolved font-size in px.</td></tr>
 							</tbody>
 						</table>
 					</div>

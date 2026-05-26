@@ -1,4 +1,3 @@
-V1.1
 # fit-flush
 
 [![npm](https://img.shields.io/npm/v/%40liiift-studio%2Ffit-flush.svg)](https://www.npmjs.com/package/@liiift-studio/fit-flush) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![part of liiift type-tools](https://img.shields.io/badge/liiift-type--tools-blueviolet)](https://github.com/Liiift-Studio/type-tools)
@@ -170,4 +169,4 @@ The root `package.json` lists `next` in `devDependencies`. This is intentional â
 
 ---
 
-## Current version: 0.1.4
+## Current version: 1.0.5
