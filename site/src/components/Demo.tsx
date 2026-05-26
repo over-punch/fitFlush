@@ -1,7 +1,7 @@
 "use client"
 
 // fitFlush demo — interactive text fitting with per-axis fill and container controls
-import { useState, useEffect, useRef, useDeferredValue, useCallback } from "react"
+import { useState, useEffect, useRef, useDeferredValue } from "react"
 import { useFitFlush } from "@liiift-studio/fit-flush"
 import type { FitFlushOptions } from "@liiift-studio/fit-flush"
 
@@ -24,45 +24,15 @@ function FittedText({
 	multiLine: boolean
 	onSizeChange: (size: string) => void
 }) {
-	const ref = useFitFlush<HTMLParagraphElement>(options)
-	const observerRef = useRef<MutationObserver | null>(null)
-
-	/** Read the current fontSize from the element and report it. */
-	const readSize = useCallback(
-		(el: HTMLElement) => {
-			const fs = el.style.fontSize
-			if (fs) onSizeChange(fs)
-		},
-		[onSizeChange],
-	)
-
-	/** Attach a MutationObserver to watch style changes on the target. */
-	const setRef = useCallback(
-		(el: HTMLParagraphElement | null) => {
-			if (observerRef.current) {
-				observerRef.current.disconnect()
-				observerRef.current = null
-			}
-
-			if (ref) (ref as React.MutableRefObject<HTMLParagraphElement | null>).current = el
-
-			if (!el) return
-
-			readSize(el)
-
-			observerRef.current = new MutationObserver(() => readSize(el))
-			observerRef.current.observe(el, { attributes: true, attributeFilter: ["style"] })
-		},
-		[ref, readSize],
-	)
+	const { ref, size } = useFitFlush<HTMLParagraphElement>(options)
 
 	useEffect(() => {
-		return () => observerRef.current?.disconnect()
-	}, [])
+		if (size > 0) onSizeChange(`${size}px`)
+	}, [size, onSizeChange])
 
 	return (
 		<p
-			ref={setRef}
+			ref={ref}
 			style={{
 				fontFamily: DEMO_FONT,
 				fontWeight: 700,
@@ -105,7 +75,7 @@ function Slider({
 				type="range" min={min} max={max} step={step} value={value}
 				onChange={e => onChange(Number(e.target.value))}
 				aria-label={ariaLabel}
-				style={{ touchAction: "none" }}
+				style={{ touchAction: "pan-y" }}
 			/>
 		</div>
 	)

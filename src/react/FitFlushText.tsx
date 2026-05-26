@@ -2,16 +2,21 @@
 
 import {
 	forwardRef,
+	type AriaAttributes,
 	type CSSProperties,
 	type ElementType,
+	type HTMLAttributes,
 	type ReactNode,
 	type Ref,
 } from 'react'
 import { useFitFlush } from './useFitFlush'
 import type { FitFlushOptions } from '../core/types'
 
-/** Props for <FitFlushText>. Spreads FitFlushOptions plus rendering props. */
-export interface FitFlushTextProps extends FitFlushOptions {
+/** Props for <FitFlushText>. Spreads FitFlushOptions plus HTML/ARIA attributes. */
+export interface FitFlushTextProps
+	extends FitFlushOptions,
+		AriaAttributes,
+		Omit<HTMLAttributes<HTMLElement>, 'style' | 'className' | 'children'> {
 	children: ReactNode
 	as?: ElementType
 	className?: string
@@ -20,11 +25,26 @@ export interface FitFlushTextProps extends FitFlushOptions {
 
 /**
  * Drop-in component that fits its children to the parent container.
- * Pass any FitFlushOptions as props, plus `as` to change the rendered element.
+ * Pass any FitFlushOptions as props, plus `as` to change the rendered element,
+ * and any ARIA or HTML attributes — they are forwarded to the DOM element.
  */
 export const FitFlushText = forwardRef<HTMLElement, FitFlushTextProps>(
-	({ children, as: Tag = 'span', className, style, ...options }, forwardedRef) => {
-		const innerRef = useFitFlush<HTMLElement>(options)
+	(
+		{
+			children,
+			as: Tag = 'span',
+			className,
+			style,
+			// FitFlushOptions — consumed by the hook, not spread to DOM
+			mode, min, max, precision, padding, vfSettings, container, onFit,
+			// Everything else (ARIA, data-*, event handlers, etc.)
+			...htmlProps
+		},
+		forwardedRef,
+	) => {
+		const { ref: innerRef } = useFitFlush<HTMLElement>({
+			mode, min, max, precision, padding, vfSettings, container, onFit,
+		})
 
 		// Merge forwarded ref with internal hook ref — both must point to the same node.
 		const setRef = (node: HTMLElement | null) => {
@@ -37,7 +57,12 @@ export const FitFlushText = forwardRef<HTMLElement, FitFlushTextProps>(
 		}
 
 		return (
-			<Tag ref={setRef as Ref<HTMLElement>} className={className} style={style}>
+			<Tag
+				ref={setRef as Ref<HTMLElement>}
+				className={className}
+				style={style}
+				{...htmlProps}
+			>
 				{children}
 			</Tag>
 		)

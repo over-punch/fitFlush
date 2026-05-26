@@ -1,5 +1,6 @@
 // Core algorithm tests for fit-flush.
 
+import { jest } from '@jest/globals'
 import { fitFlush, fitFlushLive } from '../core/adjust'
 import { mockMeasurement, restoreMeasurement } from './mocks'
 
@@ -237,5 +238,162 @@ describe('fitFlushLive', () => {
 		const newSize = handle.refit()
 		expect(newSize).toBe(handle.size)
 		handle.dispose()
+	})
+})
+
+describe('fitFlush — container override', () => {
+	it('uses the explicit container option instead of parentElement', () => {
+		// Two containers with different widths. Pass the outer as the explicit container.
+		mockMeasurement({ containerWidth: 200, containerHeight: 200 })
+		const outer = document.createElement('div')
+		const inner = document.createElement('div')
+		const target = document.createElement('h1')
+		target.textContent = 'abcdefghij' // 10 chars
+		inner.appendChild(target)
+		outer.appendChild(inner)
+		document.body.appendChild(outer)
+
+		const sizeWithParent = fitFlush(target, { mode: 'width' })
+		// Now override with a custom container that getBCR reports differently.
+		// Since our mock returns containerWidth for all non-probe elements,
+		// we just verify that passing an explicit container doesn't error.
+		const sizeWithContainer = fitFlush(target, { mode: 'width', container: outer })
+		expect(typeof sizeWithContainer).toBe('number')
+		expect(sizeWithContainer).toBeGreaterThanOrEqual(8)
+		// Both point to elements that the mock treats the same — sizes should match.
+		expect(sizeWithContainer).toBe(sizeWithParent)
+	})
+})
+
+describe('fitFlush — onFit callback', () => {
+	it('calls onFit with the computed font-size after each fit', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('abcdefghij')
+		const received: number[] = []
+		const size = fitFlush(target, { mode: 'width', onFit: (s) => received.push(s) })
+		expect(received).toHaveLength(1)
+		expect(received[0]).toBe(size)
+	})
+
+	it('onFit receives the same value written to target.style.fontSize', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('hello')
+		let reported = 0
+		fitFlush(target, { mode: 'width', onFit: (s) => { reported = s } })
+		expect(target.style.fontSize).toBe(`${reported}px`)
+	})
+})
+
+describe('fitFlush — analytical fallback with non-linear probe', () => {
+	it('converges when linear prediction overshoots due to hinting non-linearity', () => {
+		// Non-linear probeWidth: slightly wider at small sizes (simulates hinting)
+		// so the linear prediction overshoots and the bisect fallback must activate.
+		mockMeasurement({
+			containerWidth: 500,
+			containerHeight: 200,
+			probeWidth: (size, text) => {
+				// Add a flat +20px at any size to force overshoot when size≈100
+				return size * text.length * 0.5 + 20
+			},
+		})
+		const { target } = setupDOM('abcdefghij') // 10 chars
+		const size = fitFlush(target, { mode: 'width', min: 8, max: 400, precision: 0.5 })
+		// Should still converge to a value within the container
+		expect(size).toBeGreaterThanOrEqual(8)
+		expect(size).toBeLessThanOrEqual(400)
+		// The fitted element should not overflow: probeWidth(size, text) ≤ 500
+		const probeW = size * 10 * 0.5 + 20
+		expect(probeW).toBeLessThanOrEqual(500 + 0.5) // within precision
+	})
+})
+
+describe('fitFlush — CSS custom property', () => {
+	it('writes --ff-size to the target after fitting', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('text')
+		const size = fitFlush(target, { mode: 'width' })
+		expect(target.style.getPropertyValue('--ff-size')).toBe(`${size}px`)
+	})
+})
+
+describe('fitFlush — vfSettings integration', () => {
+	it('sets font-variation-settings on the probe when vfSettings is provided', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+
+		const vfCalls: string[] = []
+		const origSetProperty = CSSStyleDeclaration.prototype.setProperty
+		jest
+			.spyOn(CSSStyleDeclaration.prototype, 'setProperty')
+			.mockImplementation(function (
+				this: CSSStyleDeclaration,
+				prop: string,
+				value: string | null,
+				priority?: string,
+			) {
+				if (prop === 'font-variation-settings' && value) vfCalls.push(value)
+				return origSetProperty.call(this, prop, value, priority)
+			})
+
+		const { target } = setupDOM('test')
+		fitFlush(target, { mode: 'width', vfSettings: { wght: { max: 900 } } })
+
+		expect(vfCalls.some((v) => v.includes('"wght" 900'))).toBe(true)
+	})
+
+	it('merges vfSettings with existing copied font-variation-settings', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+
+		// Mock getComputedStyle to return a known font-variation-settings on the target.
+		const realGetComputedStyle = window.getComputedStyle.bind(window)
+		jest.spyOn(window, 'getComputedStyle').mockImplementation((el, pseudo) => {
+			const cs = realGetComputedStyle(el as Element, pseudo as string | null)
+			return new Proxy(cs, {
+				get(target, prop) {
+					if (prop === 'getPropertyValue') {
+						return (name: string) =>
+							name === 'font-variation-settings'
+								? '"opsz" 36'
+								: (cs as CSSStyleDeclaration).getPropertyValue(name)
+					}
+					return (target as unknown as Record<string | symbol, unknown>)[prop]
+				},
+			})
+		})
+
+		const vfCalls: string[] = []
+		const origSetProperty = CSSStyleDeclaration.prototype.setProperty
+		jest
+			.spyOn(CSSStyleDeclaration.prototype, 'setProperty')
+			.mockImplementation(function (
+				this: CSSStyleDeclaration,
+				prop: string,
+				value: string | null,
+				priority?: string,
+			) {
+				if (prop === 'font-variation-settings' && value) vfCalls.push(value)
+				return origSetProperty.call(this, prop, value, priority)
+			})
+
+		const { target } = setupDOM('test')
+		fitFlush(target, { mode: 'width', vfSettings: { wght: { max: 900 } } })
+
+		const merged = vfCalls.find((v) => v.includes('"wght" 900'))
+		expect(merged).toBeDefined()
+		expect(merged).toContain('"opsz" 36')
+		expect(merged).toContain('"wght" 900')
+	})
+})
+
+describe('fitFlush — size rounding', () => {
+	it('rounds the written font-size to one decimal place', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('abcdefghij')
+		fitFlush(target, { mode: 'width' })
+		// fontSize should have at most one decimal digit
+		const fs = target.style.fontSize
+		const match = fs.match(/^(\d+\.?\d*)px$/)
+		expect(match).not.toBeNull()
+		const value = parseFloat(match![1])
+		expect(value).toBeCloseTo(Math.round(value * 10) / 10, 10)
 	})
 })

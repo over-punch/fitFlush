@@ -1,6 +1,6 @@
 // React hook wrapping fitFlush with ResizeObserver + fonts.ready auto-refit.
 
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { fitFlush } from '../core/adjust'
 import type { FitFlushOptions } from '../core/types'
 
@@ -10,22 +10,28 @@ const useIsomorphicLayoutEffect =
 
 /**
  * React hook that fits text inside the ref'd element to its parent container.
- * Re-runs on container resize (width + height) and after web fonts load.
- * Cleans up observers on unmount.
+ * Re-runs on container resize (width + height), after web fonts load, and
+ * whenever options change. Returns { ref, size } — size is the last computed
+ * font-size in px (0 before first measurement).
  */
 export function useFitFlush<T extends HTMLElement = HTMLElement>(
 	options: FitFlushOptions = {},
-) {
+): { ref: React.RefObject<T | null>; size: number } {
 	const ref = useRef<T>(null)
 	const optionsRef = useRef(options)
 	optionsRef.current = options
+	const [size, setSize] = useState(0)
 
-	// Pull out the primitive options that should trigger a re-run.
+	// Pull out primitives that should trigger a re-run when they change.
 	const { mode, min, max, precision } = options
 	const padX =
 		typeof options.padding === 'number' ? options.padding : options.padding?.x ?? 0
 	const padY =
 		typeof options.padding === 'number' ? options.padding : options.padding?.y ?? 0
+	// Stringify vfSettings so object identity doesn't prevent updates.
+	const vfKey = options.vfSettings ? JSON.stringify(options.vfSettings) : ''
+	// Include container directly — if it changes, re-attach the ResizeObserver.
+	const container = options.container ?? null
 
 	useIsomorphicLayoutEffect(() => {
 		const el = ref.current
@@ -38,14 +44,15 @@ export function useFitFlush<T extends HTMLElement = HTMLElement>(
 
 		const run = () => {
 			if (cancelled) return
-			fitFlush(el, optionsRef.current)
+			const s = fitFlush(el, optionsRef.current)
+			setSize(s)
 		}
 
 		run()
 
-		const container = optionsRef.current.container ?? el.parentElement
+		const resolvedContainer = optionsRef.current.container ?? el.parentElement
 		let ro: ResizeObserver | null = null
-		if (container && typeof ResizeObserver !== 'undefined') {
+		if (resolvedContainer && typeof ResizeObserver !== 'undefined') {
 			ro = new ResizeObserver((entries) => {
 				const w = Math.round(entries[0].contentRect.width)
 				const h = Math.round(entries[0].contentRect.height)
@@ -55,7 +62,7 @@ export function useFitFlush<T extends HTMLElement = HTMLElement>(
 				cancelAnimationFrame(rafId)
 				rafId = requestAnimationFrame(run)
 			})
-			ro.observe(container)
+			ro.observe(resolvedContainer)
 		}
 
 		document.fonts?.ready?.then(() => { if (!cancelled) run() }).catch(() => {})
@@ -65,7 +72,7 @@ export function useFitFlush<T extends HTMLElement = HTMLElement>(
 			ro?.disconnect()
 			cancelAnimationFrame(rafId)
 		}
-	}, [mode, min, max, precision, padX, padY])
+	}, [mode, min, max, precision, padX, padY, vfKey, container])
 
-	return ref
+	return { ref, size }
 }

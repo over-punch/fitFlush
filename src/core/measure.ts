@@ -56,7 +56,7 @@ export function createProbe(target: HTMLElement, text: string): HTMLElement {
 	s.margin = '0'
 	s.padding = '0'
 	s.border = '0'
-	s.display = 'inline-block'
+	// display is set by configureProbe based on mode
 
 	document.body.appendChild(probe)
 	return probe
@@ -69,9 +69,13 @@ export function configureProbe(
 	innerWidth: number,
 ): void {
 	if (mode === 'width') {
+		// inline-block with nowrap: probe expands to the natural width of a single line.
+		probe.style.display = 'inline-block'
 		probe.style.whiteSpace = 'nowrap'
 		probe.style.width = 'auto'
 	} else {
+		// block with explicit width: text wraps exactly as the real element would.
+		probe.style.display = 'block'
 		probe.style.whiteSpace = 'normal'
 		probe.style.width = `${innerWidth}px`
 	}

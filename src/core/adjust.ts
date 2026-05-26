@@ -7,7 +7,7 @@ import {
 	configureProbe,
 	createProbe,
 } from './measure'
-import { buildMaxAxisString } from './vf'
+import { mergeMaxAxisString } from './vf'
 import { DEFAULTS, type FitFlushHandle, type FitFlushOptions } from './types'
 
 /** Resolve the `padding` option to a normalized {x, y} pair in px. */
@@ -61,9 +61,13 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 
 	const probe = createProbe(target, text)
 
-	// Apply max-axis VF settings for worst-case safety when provided.
-	const maxAxis = buildMaxAxisString(options.vfSettings)
-	if (maxAxis) probe.style.fontVariationSettings = maxAxis
+	// Apply max-axis VF settings — merge with already-copied font-variation-settings
+	// rather than replacing, so axes set on the target (e.g. opsz) are preserved.
+	if (options.vfSettings) {
+		const existing = probe.style.getPropertyValue('font-variation-settings') ?? ''
+		const merged = mergeMaxAxisString(existing, options.vfSettings)
+		if (merged) probe.style.setProperty('font-variation-settings', merged)
+	}
 
 	configureProbe(probe, mode, innerWidth)
 
@@ -74,8 +78,12 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 		size = binarySearchFit(probe, mode, innerWidth, innerHeight, min, max, precision)
 	}
 
+	// Round to one decimal to avoid sub-pixel rendering discrepancies across browsers.
+	const rounded = Math.round(size * 10) / 10
+
 	// Write — target gets the computed size.
-	target.style.fontSize = `${size}px`
+	target.style.fontSize = `${rounded}px`
+	target.style.setProperty('--ff-size', `${rounded}px`)
 	target.style.whiteSpace = mode === 'width' ? 'nowrap' : ''
 
 	// Dispose probe.
@@ -90,9 +98,9 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 		})
 	}
 
-	options.onFit?.(size)
+	options.onFit?.(rounded)
 
-	return size
+	return rounded
 }
 
 /**

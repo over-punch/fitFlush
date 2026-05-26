@@ -27,9 +27,11 @@ export interface FitFlushOptions {
 	/**
 	 * Variable-font axis ranges. When provided, measurement runs with every axis
 	 * held at its `max`, so the computed size stays safe under later axis animation.
+	 * Existing axes already set on the target are preserved; only the listed axes
+	 * are overridden to their max.
 	 * Example: { wght: { max: 900 }, wdth: { max: 125 } }
 	 */
-	vfSettings?: Record<string, { min?: number; default?: number; max: number }>
+	vfSettings?: Record<string, { max: number }>
 
 	/** Optional container override. Defaults to `target.parentElement`. */
 	container?: HTMLElement | null
