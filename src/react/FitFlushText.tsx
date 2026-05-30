@@ -50,12 +50,13 @@ export const FitFlushText = forwardRef<HTMLElement, FitFlushTextProps>(
 		// Merge forwarded ref with internal hook ref — both must point to the same node.
 		// Memoised so the callback ref identity stays stable across renders, preventing
 		// React from calling the old ref with null + new ref with node on every render.
+		// We use Object.assign to write .current without violating RefObject<T> readonly.
 		const setRef = useCallback((node: HTMLElement | null) => {
-			;(innerRef as { current: HTMLElement | null }).current = node
+			Object.assign(innerRef, { current: node })
 			if (typeof forwardedRef === 'function') {
 				forwardedRef(node)
 			} else if (forwardedRef) {
-				;(forwardedRef as { current: HTMLElement | null }).current = node
+				Object.assign(forwardedRef, { current: node })
 			}
 		}, [forwardedRef]) // innerRef is a stable React ref object
 

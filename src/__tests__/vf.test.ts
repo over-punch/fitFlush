@@ -66,4 +66,10 @@ describe('mergeMaxAxisString', () => {
 		expect(mergeMaxAxisString('', undefined)).toBe('')
 		expect(mergeMaxAxisString('normal', undefined)).toBe('')
 	})
+
+	it('parses and preserves negative axis values (e.g. slnt)', () => {
+		const result = mergeMaxAxisString('"slnt" -12', { wght: { max: 900 } })
+		expect(result).toContain('"slnt" -12')
+		expect(result).toContain('"wght" 900')
+	})
 })

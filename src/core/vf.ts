@@ -22,7 +22,8 @@ export function buildMaxAxisString(vfSettings: FitFlushOptions['vfSettings']): s
 /** Parse a CSS `font-variation-settings` string into an axis → value map. */
 function parseAxisSettings(str: string): Record<string, number> {
 	const result: Record<string, number> = {}
-	for (const [, axis, value] of str.matchAll(/"([^"]+)"\s+([\d.-]+)/g)) {
+	// Use -?[\d.]+ so negative axis values (e.g. "slnt" -12) are captured correctly.
+	for (const [, axis, value] of str.matchAll(/"([^"]+)"\s+(-?[\d.]+)/g)) {
 		result[axis] = parseFloat(value)
 	}
 	return result

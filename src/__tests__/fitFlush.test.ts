@@ -241,6 +241,25 @@ describe('fitFlushLive', () => {
 	})
 })
 
+describe('fitFlushLive — dispose and dedup', () => {
+	it('double dispose is a no-op and does not throw', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('hi')
+		const handle = fitFlushLive(target, { mode: 'width' })
+		handle.dispose()
+		expect(() => handle.dispose()).not.toThrow()
+	})
+
+	it('cleans up --ff-size custom property on dispose', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('hi')
+		const handle = fitFlushLive(target, { mode: 'width' })
+		expect(target.style.getPropertyValue('--ff-size')).not.toBe('')
+		handle.dispose()
+		expect(target.style.getPropertyValue('--ff-size')).toBe('')
+	})
+})
+
 describe('fitFlush — container override', () => {
 	it('uses the explicit container option instead of parentElement', () => {
 		// Two containers with different widths. Pass the outer as the explicit container.
@@ -381,6 +400,53 @@ describe('fitFlush — vfSettings integration', () => {
 		expect(merged).toBeDefined()
 		expect(merged).toContain('"opsz" 36')
 		expect(merged).toContain('"wght" 900')
+	})
+})
+
+describe('fitFlush — search short-circuit branches', () => {
+	it('returns max immediately when max font-size already fits (binarySearchFit short-circuit)', () => {
+		// Container is enormous — even the max should fit.
+		mockMeasurement({ containerWidth: 999999, containerHeight: 999999 })
+		const { target } = setupDOM('hi')
+		const size = fitFlush(target, { mode: 'height', min: 8, max: 50 })
+		expect(size).toBe(50)
+	})
+
+	it('returns min when even min overflows (binarySearchFit short-circuit)', () => {
+		// Container is so narrow that even min overflows.
+		mockMeasurement({ containerWidth: 0.1, containerHeight: 0.1 })
+		const { target } = setupDOM('text')
+		const size = fitFlush(target, { mode: 'height', min: 8, max: 400 })
+		expect(size).toBe(8)
+	})
+
+	it('returns min when analyticalWidthFit measures zero width (zero-width fast-path)', () => {
+		// Return 0 width for the probe to trigger the <= 0 early return.
+		mockMeasurement({
+			containerWidth: 500,
+			containerHeight: 200,
+			probeWidth: () => 0,
+		})
+		const { target } = setupDOM('hi')
+		const size = fitFlush(target, { mode: 'width', min: 12, max: 400 })
+		expect(size).toBe(12)
+	})
+})
+
+describe('fitFlush — option validation', () => {
+	it('does not infinite-loop when precision is 0', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('hi')
+		// Should complete and return a valid size despite precision: 0.
+		const size = fitFlush(target, { mode: 'width', precision: 0 })
+		expect(size).toBeGreaterThanOrEqual(8)
+	})
+
+	it('does not infinite-loop when precision is negative', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('hi')
+		const size = fitFlush(target, { mode: 'width', precision: -1 })
+		expect(size).toBeGreaterThanOrEqual(8)
 	})
 })
 

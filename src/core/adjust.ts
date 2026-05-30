@@ -27,9 +27,14 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 	if (!target) return 0
 
 	const mode = options.mode ?? DEFAULTS.mode
-	const min = options.min ?? DEFAULTS.min
-	const max = options.max ?? DEFAULTS.max
-	const precision = options.precision ?? DEFAULTS.precision
+	// Clamp precision to a safe minimum to prevent infinite binary-search loops.
+	const rawPrecision = options.precision ?? DEFAULTS.precision
+	const precision = Math.max(0.01, isFinite(rawPrecision) ? rawPrecision : DEFAULTS.precision)
+	// Ensure min/max are finite and ordered.
+	const rawMin = options.min ?? DEFAULTS.min
+	const rawMax = options.max ?? DEFAULTS.max
+	const min = isFinite(rawMin) ? rawMin : DEFAULTS.min
+	const max = isFinite(rawMax) && rawMax > min ? rawMax : Math.max(min, DEFAULTS.max)
 	const pad = resolvePadding(options.padding)
 
 	const container = options.container ?? target.parentElement
@@ -105,7 +110,7 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 
 /**
  * Live version of fitFlush: auto-refits on container resize (ResizeObserver,
- * width-only dedup) and after `document.fonts.ready`. Returns a handle with
+ * width + height dedup) and after `document.fonts.ready`. Returns a handle with
  * `.size`, `.refit()`, and `.dispose()`. Call dispose on unmount to restore
  * the original fontSize and stop observing.
  */
@@ -167,6 +172,7 @@ export function fitFlushLive(
 			if (typeof cancelAnimationFrame !== 'undefined') cancelAnimationFrame(rafId)
 			target.style.fontSize = originalFontSize
 			target.style.whiteSpace = originalWhiteSpace
+			target.style.removeProperty('--ff-size')
 		},
 	}
 }

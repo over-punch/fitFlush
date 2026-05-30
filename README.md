@@ -59,12 +59,12 @@ import { useFitFlush } from "@liiift-studio/fit-flush"
 
 // Inside a React component:
 export function Title() {
-	const ref = useFitFlush<HTMLHeadingElement>({ mode: "width" })
+	const { ref } = useFitFlush<HTMLHeadingElement>({ mode: "width" })
 	return <h1 ref={ref}>Resizing headline</h1>
 }
 ```
 
-The hook re-runs on container resize (ResizeObserver, width-only dedup) and after web fonts load (`document.fonts.ready`). It cleans up on unmount.
+The hook returns `{ ref, size }` — attach `ref` to the element and read `size` for the last computed font-size in px (0 before first measurement). The hook re-runs on container resize (ResizeObserver, width + height dedup) and after web fonts load (`document.fonts.ready`). It cleans up on unmount.
 
 ### Vanilla JS — one-shot
 
@@ -97,8 +97,8 @@ If you animate variable-font axes elsewhere on the page, pass the full axis rang
 fitFlush(target, {
 	mode: "width",
 	vfSettings: {
-		wght: { min: 100, default: 400, max: 900 },
-		wdth: { min: 75,  default: 100, max: 125 },
+		wght: { max: 900 },
+		wdth: { max: 125 },
 	},
 })
 ```
@@ -125,7 +125,7 @@ const size: number = fitFlush(document.querySelector<HTMLElement>("h1")!, option
 | `padding` | `number \| { x?, y? }` | `0` | Inset from container edges in px. A single number insets both axes. |
 | `vfSettings` | `Record<string, { max: number }>` | — | Variable-font axis ranges. When present, measurement runs at every axis' `max` for worst-case safety. |
 | `container` | `HTMLElement` | `target.parentElement` | Override the container used for measurement. |
-| `onFit` | `(size: number) => void` | — | Callback fired after each fit calculation, receiving the resolved font-size or tracking value. |
+| `onFit` | `(size: number) => void` | — | Callback fired after each fit calculation, receiving the resolved font-size in px. |
 
 ---
 
