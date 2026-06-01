@@ -4,7 +4,7 @@ import { ImageResponse } from 'next/og'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-export const alt = 'fit-flush — fit text to its container'
+export const alt = 'Fit Flush — fit text to its container'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -44,7 +44,7 @@ export default async function OGImage() {
 							letterSpacing: '-0.02em',
 						}}
 					>
-						fit-flush
+						Fit Flush
 					</div>
 					<div
 						style={{

@@ -1,7 +1,7 @@
 "use client"
 
 // fitFlush demo — interactive text fitting with per-axis fill and container controls
-import { useState, useEffect, useRef, useDeferredValue } from "react"
+import { useState, useEffect, useRef, useDeferredValue, useCallback, useMemo } from "react"
 import { useFitFlush } from "@liiift-studio/fit-flush"
 import type { FitFlushOptions } from "@liiift-studio/fit-flush"
 
@@ -56,6 +56,7 @@ function Slider({
 	suffix,
 	ariaLabel,
 	title,
+	inputId,
 	onChange,
 }: {
 	label: string
@@ -66,14 +67,16 @@ function Slider({
 	suffix: string
 	ariaLabel: string
 	title?: string
+	inputId: string
 	onChange: (v: number) => void
 }) {
 	return (
 		<div className="flex flex-col gap-2">
-			<span className="uppercase tracking-widest opacity-50">
+			<label htmlFor={inputId} className="uppercase tracking-widest opacity-50">
 				{label} — {value}{suffix}
-			</span>
+			</label>
 			<input
+				id={inputId}
 				type="range" min={min} max={max} step={step} value={value}
 				onChange={e => onChange(Number(e.target.value))}
 				aria-label={ariaLabel}
@@ -109,6 +112,7 @@ export default function Demo() {
 		const el = containerRef.current
 		if (!el) return
 		const ro = new ResizeObserver((entries) => {
+			if (!entries[0]) return
 			setContainerPx(entries[0].contentRect.width)
 			setContainerHPx(entries[0].contentRect.height)
 		})
@@ -122,26 +126,30 @@ export default function Demo() {
 
 	const mode = multiLine ? "both" : "width"
 
-	const containerStyle: React.CSSProperties = multiLine
-		? { width: `${widthPct}%`, height: `${heightPx}px`, overflow: "hidden" }
-		: { width: `${widthPct}%`, overflow: "hidden" }
+	const containerStyle: React.CSSProperties = useMemo(() => (
+		multiLine
+			? { width: `${widthPct}%`, height: `${heightPx}px`, overflow: "hidden" }
+			: { width: `${widthPct}%`, overflow: "hidden" }
+	), [multiLine, widthPct, heightPx])
 
-	const options: FitFlushOptions = {
+	const options: FitFlushOptions = useMemo(() => ({
 		mode,
 		padding: { x: padX, y: padY },
 		min: 8,
 		max: 400,
-	}
+	}), [mode, padX, padY])
 
-	// Re-mount FittedText when mode or fill changes; container dimension
+	const handleSizeChange = useCallback((size: string) => setFontSize(size), [])
+
+	// Re-mount FittedText only when mode changes; fill and container dimension
 	// changes are handled by the ResizeObserver (no remount needed).
-	const modeKey = `${mode}-${fillX}-${fillY}`
+	const modeKey = mode
 
 	return (
 		<div className="flex flex-col gap-8">
 
 			{/* Font-size readout */}
-			<div className="flex items-baseline gap-3">
+			<div className="flex items-baseline gap-3" aria-live="polite" aria-atomic="true">
 				<span className="text-3xl font-mono font-bold tracking-tight tabular-nums">
 					{fontSize || "—"}
 				</span>
@@ -157,6 +165,7 @@ export default function Demo() {
 				>
 					<div
 						ref={containerRef}
+						aria-label="Live demo container — resize via the sliders below"
 						className="relative rounded border border-white/20"
 						style={{ ...containerStyle, background: "rgba(255,255,255,0.04)" }}
 					>
@@ -165,7 +174,7 @@ export default function Demo() {
 							text={dText || "Text"}
 							options={options}
 							multiLine={multiLine}
-							onSizeChange={setFontSize}
+							onSizeChange={handleSizeChange}
 						/>
 					</div>
 				</div>
@@ -176,10 +185,12 @@ export default function Demo() {
 
 				{/* Text input — primary control */}
 				<div className="flex flex-col gap-2 sm:col-span-2">
-					<span className="uppercase tracking-widest opacity-50">Text</span>
+					<label htmlFor="demo-text-input" className="uppercase tracking-widest opacity-50">Text</label>
 					<input
+						id="demo-text-input"
 						type="text"
 						value={text}
+						placeholder="Text"
 						onChange={e => { setText(e.target.value); setUserEdited(true) }}
 						aria-label="Text to fit"
 						title="Type any text to see fitFlush scale it flush to the container"
@@ -189,12 +200,14 @@ export default function Demo() {
 
 				{/* Single-line / Multi-line toggle */}
 				<div className="flex flex-col gap-2 sm:col-span-2">
-					<div className="flex gap-2">
+					<div role="group" aria-label="Fitting mode" className="flex gap-2">
 						<button
 							onClick={() => {
 								setMultiLine(false)
+								setFontSize("")
 								if (!userEdited) setText(DEFAULT_TEXT_SINGLE)
 							}}
+							aria-pressed={!multiLine}
 							title="Fit text on a single line — font-size scales so the text spans the full container width"
 							className={`px-3 py-1.5 rounded-full border transition-colors ${
 								!multiLine
@@ -207,8 +220,10 @@ export default function Demo() {
 						<button
 							onClick={() => {
 								setMultiLine(true)
+								setFontSize("")
 								if (!userEdited) setText(DEFAULT_TEXT_MULTI)
 							}}
+							aria-pressed={multiLine}
 							title="Allow text to wrap across multiple lines — font-size scales to fill the container area"
 							className={`px-3 py-1.5 rounded-full border transition-colors ${
 								multiLine
@@ -230,6 +245,7 @@ export default function Demo() {
 				<Slider
 					label="Container width" value={widthPct} min={30} max={100} step={1}
 					suffix="%" ariaLabel="Container width as percentage"
+					inputId="slider-width"
 					title="Resize the container width — the font-size recalculates instantly to stay flush"
 					onChange={setWidthPct}
 				/>
@@ -237,32 +253,41 @@ export default function Demo() {
 					<Slider
 						label="Container height" value={heightPx} min={40} max={400} step={4}
 						suffix="px" ariaLabel="Container height in pixels"
+						inputId="slider-height"
 						title="Resize the container height — the font-size recalculates to fill the new area"
 						onChange={setHeightPx}
 					/>
 				)}
 
 				{/* Fill section */}
-				<Slider
-					label="Fill X" value={fillX} min={50} max={100} step={1}
-					suffix="%" ariaLabel="Horizontal text fill percentage"
-					title="Horizontal fill — 100% means the text spans the full container width; lower values add breathing room on each side"
-					onChange={setFillX}
-				/>
-				{multiLine && (
+				<div className="flex flex-col gap-1">
 					<Slider
-						label="Fill Y" value={fillY} min={50} max={100} step={1}
-						suffix="%" ariaLabel="Vertical text fill percentage"
-						title="Vertical fill — 100% means the text spans the full container height; lower values add breathing room above and below"
-						onChange={setFillY}
+						label="Fill X" value={fillX} min={50} max={100} step={1}
+						suffix="%" ariaLabel="Horizontal text fill percentage — minimum 50%"
+						inputId="slider-fill-x"
+						title="Horizontal fill — 100% means the text spans the full container width; lower values add breathing room on each side. Minimum 50% (equal padding each side)."
+						onChange={setFillX}
 					/>
+					<p className="text-xs opacity-30">Minimum 50% — equal breathing room on each side</p>
+				</div>
+				{multiLine && (
+					<div className="flex flex-col gap-1">
+						<Slider
+							label="Fill Y" value={fillY} min={50} max={100} step={1}
+							suffix="%" ariaLabel="Vertical text fill percentage — minimum 50%"
+							inputId="slider-fill-y"
+							title="Vertical fill — 100% means the text spans the full container height; lower values add breathing room above and below. Minimum 50% (equal padding each side)."
+							onChange={setFillY}
+						/>
+						<p className="text-xs opacity-30">Minimum 50% — equal breathing room above and below</p>
+					</div>
 				)}
 
 			</div>
 
 			<p className="text-xs opacity-40 italic" style={{ lineHeight: "1.8" }}>
 				Resize the container or adjust fill to see the font-size adapt.
-				The size recalculates every frame via ResizeObserver.
+				The size recalculates whenever the container is resized.
 			</p>
 		</div>
 	)

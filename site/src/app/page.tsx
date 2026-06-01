@@ -6,7 +6,6 @@ import CodeBlock from "@/components/CodeBlock"
 import SiteFooter from "@/components/SiteFooter"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
-import { MagnetChar } from "@liiift-studio/magnettype"
 
 /** Landing page with hero demo, install command, and code examples. */
 export default function Home() {
@@ -18,8 +17,8 @@ export default function Home() {
 				<div className="flex flex-col gap-2">
 					<p className="text-xs uppercase tracking-widest opacity-50">fitFlush</p>
 					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 300, "opsz" 144', lineHeight: "1.05em" }}>
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }}>Fit text to</MagnetChar><br />
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }} style={{ opacity: 0.5, fontStyle: "italic" }}>any container.</MagnetChar>
+						<span>Fit text to</span><br />
+						<span style={{ opacity: 0.5, fontStyle: "italic" }}>any container.</span>
 					</h1>
 				</div>
 				<div className="flex items-center gap-4">
@@ -36,7 +35,7 @@ export default function Home() {
 
 			{/* Demo */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-4">
-				<p className="text-xs uppercase tracking-widest opacity-50">Live demo — drag the sliders</p>
+				<h2 className="text-xs uppercase tracking-widest opacity-50">Live demo — drag the sliders</h2>
 				<div className="rounded-xl -mx-8 px-8 py-8" style={{ background: "rgba(0,0,0,0.25)", overflow: "hidden" }}>
 					<Demo />
 				</div>
@@ -44,15 +43,15 @@ export default function Home() {
 
 			{/* Explanation */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
-				<p className="text-xs uppercase tracking-widest opacity-50">How it works</p>
+				<h2 className="text-xs uppercase tracking-widest opacity-50">How it works</h2>
 				<div className="prose-grid grid grid-cols-1 sm:grid-cols-2 gap-12 text-sm leading-relaxed opacity-70">
 					<div className="flex flex-col gap-3">
 						<p className="font-semibold opacity-100 text-base">CSS can&rsquo;t fit a font size</p>
 						<p>There&rsquo;s no CSS property that says &ldquo;make this text as large as it can be while staying inside its container.&rdquo; <code className="text-xs font-mono">clamp()</code> just rescales, and <code className="text-xs font-mono">vw</code> units don&rsquo;t know about your layout. You need measurement.</p>
 					</div>
 					<div className="flex flex-col gap-3">
-						<p className="font-semibold opacity-100 text-base">Binary search in 15–20 steps</p>
-						<p>Fit Flush probes a hidden clone of the element — try a size, measure, compare to target, narrow the range. It converges to within 0.5 px in under 20 iterations with no visible reflow.</p>
+						<p className="font-semibold opacity-100 text-base">Converges in 15–20 steps</p>
+						<p>Fit Flush probes a hidden clone of the element — try a size, measure, compare to target, narrow the range. In height and both modes it binary-searches to within 0.5 px in under 20 iterations; width mode uses an analytical fast path. No visible reflow.</p>
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="font-semibold opacity-100 text-base">Variable-font safe</p>
@@ -68,7 +67,7 @@ export default function Home() {
 			{/* Usage */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex items-baseline gap-4">
-					<p className="text-xs uppercase tracking-widest opacity-50">Usage</p>
+					<h2 className="text-xs uppercase tracking-widest opacity-50">Usage</h2>
 					<p className="text-xs opacity-50 tracking-wide">TypeScript + React &middot; Vanilla JS</p>
 				</div>
 				<div className="flex flex-col gap-8 text-sm">
@@ -106,11 +105,11 @@ const handle = fitFlushLive(el, {
 
 // Later:
 handle.refit()  // force re-measurement
-handle.dispose() // restore original fontSize`} />
+handle.dispose() // restore original fontSize, whiteSpace, and --ff-size`} />
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Options</p>
-						<table className="w-full text-xs">
+						<table className="w-full text-xs" aria-label="fitFlush options reference">
 							<thead>
 								<tr className="opacity-50 text-left">
 									<th className="pb-2 pr-6 font-normal">Option</th>

@@ -7,7 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 	return [
 		{
 			url: 'https://fit-flush.com',
-			lastModified: new Date(),
+			lastModified: new Date('2026-05-31'),
 			changeFrequency: 'monthly',
 			priority: 1,
 		},
