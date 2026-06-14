@@ -73,7 +73,7 @@ export default function Home() {
 				<div className="flex flex-col gap-8 text-sm">
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Drop-in component</p>
-						<CodeBlock code={`import { FitFlushText } from '@liiift-studio/fit-flush'
+						<CodeBlock code={`import { FitFlushText } from '@liiift-studio/fit-flush/react'
 
 <FitFlushText mode="width">
   Display Headline
@@ -81,9 +81,9 @@ export default function Home() {
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Hook — attach to any element</p>
-						<CodeBlock code={`import { useFitFlush } from '@liiift-studio/fit-flush'
+						<CodeBlock code={`import { useFitFlush } from '@liiift-studio/fit-flush/react'
 
-const ref = useFitFlush({ mode: 'both' })
+const { ref } = useFitFlush({ mode: 'both' })
 <h1 ref={ref}>Display Headline</h1>`} />
 					</div>
 					<div className="flex flex-col gap-3">
