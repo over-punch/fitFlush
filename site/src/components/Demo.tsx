@@ -72,8 +72,8 @@ function Slider({
 }) {
 	return (
 		<div className="flex flex-col gap-2">
-			<label htmlFor={inputId} className="uppercase tracking-widest opacity-50">
-				{label} — {value}{suffix}
+			<label htmlFor={inputId} className="uppercase tracking-[0.18em] font-medium text-muted">
+				{label} &mdash; {value}{suffix}
 			</label>
 			<input
 				id={inputId}
@@ -153,12 +153,12 @@ export default function Demo() {
 				<span className="text-3xl font-mono font-bold tracking-tight tabular-nums">
 					{fontSize || "—"}
 				</span>
-				<span className="text-xs uppercase tracking-widest opacity-50">computed font-size</span>
+				<span className="text-xs uppercase tracking-[0.18em] font-medium text-muted">computed font-size</span>
 			</div>
 
 			{/* Container visualisation */}
 			<div className="flex flex-col gap-3">
-				<span className="text-xs uppercase tracking-widest opacity-50">Container</span>
+				<span className="text-xs uppercase tracking-[0.18em] font-medium text-muted">Container</span>
 				<div
 					className="w-full flex items-start"
 					style={{ minHeight: multiLine ? `${heightPx + 16}px` : "80px" }}
@@ -185,7 +185,7 @@ export default function Demo() {
 
 				{/* Text input — primary control */}
 				<div className="flex flex-col gap-2 sm:col-span-2">
-					<label htmlFor="demo-text-input" className="uppercase tracking-widest opacity-50">Text</label>
+					<label htmlFor="demo-text-input" className="uppercase tracking-[0.18em] font-medium text-muted">Text</label>
 					<input
 						id="demo-text-input"
 						type="text"
@@ -234,7 +234,7 @@ export default function Demo() {
 							Multi-line
 						</button>
 					</div>
-					<p className="opacity-40 mt-1">
+					<p className="text-muted mt-1">
 						{multiLine
 							? "Text wraps and scales to fill the container area"
 							: "Text stays on one line and scales to fill the width"}
@@ -268,7 +268,7 @@ export default function Demo() {
 						title="Horizontal fill — 100% means the text spans the full container width; lower values add breathing room on each side. Minimum 50% (equal padding each side)."
 						onChange={setFillX}
 					/>
-					<p className="text-xs opacity-30">Minimum 50% — equal breathing room on each side</p>
+					<p className="text-xs text-subtle">Minimum 50% — equal breathing room on each side</p>
 				</div>
 				{multiLine && (
 					<div className="flex flex-col gap-1">
@@ -279,13 +279,13 @@ export default function Demo() {
 							title="Vertical fill — 100% means the text spans the full container height; lower values add breathing room above and below. Minimum 50% (equal padding each side)."
 							onChange={setFillY}
 						/>
-						<p className="text-xs opacity-30">Minimum 50% — equal breathing room above and below</p>
+						<p className="text-xs text-subtle">Minimum 50% — equal breathing room above and below</p>
 					</div>
 				)}
 
 			</div>
 
-			<p className="text-xs opacity-40 italic" style={{ lineHeight: "1.8" }}>
+			<p className="text-xs text-muted italic" style={{ lineHeight: "1.8" }}>
 				Resize the container or adjust fill to see the font-size adapt.
 				The size recalculates whenever the container is resized.
 			</p>

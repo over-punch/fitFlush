@@ -18,68 +18,62 @@ export default async function OGImage() {
 		(
 			<div
 				style={{
+					background: '#010800',
 					width: '100%',
 					height: '100%',
 					display: 'flex',
 					flexDirection: 'column',
-					alignItems: 'center',
-					justifyContent: 'center',
-					backgroundColor: '#0e0618',
-					color: '#f0eaf8',
-					fontFamily: 'Inter',
+					justifyContent: 'space-between',
+					padding: '72px 80px',
+					fontFamily: 'Inter, sans-serif',
 				}}
 			>
-				<div
-					style={{
-						display: 'flex',
-						flexDirection: 'column',
-						alignItems: 'center',
-						gap: 24,
-					}}
-				>
-					<div
-						style={{
-							fontSize: 80,
-							fontWeight: 400,
-							letterSpacing: '-0.02em',
-						}}
-					>
-						Fit Flush
+				{/* Label */}
+				<span style={{ fontSize: 13, letterSpacing: '0.18em', color: '#b0bbac', textTransform: 'uppercase' }}>
+					fitFlush
+				</span>
+
+				{/* Flush bars preview + headline */}
+				<div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+					<div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 48 }}>
+						{[1, 1, 1, 1, 1].map((scale, i) => (
+							<div
+								key={i}
+								style={{
+									width: `${scale * 600}px`,
+									height: 3,
+									background: i % 2 === 0 ? '#b0bbac' : '#2b2f29',
+									borderRadius: 2,
+								}}
+							/>
+						))}
 					</div>
-					<div
-						style={{
-							fontSize: 28,
-							color: '#a78bfa',
-							maxWidth: 700,
-							textAlign: 'center',
-							lineHeight: 1.4,
-						}}
-					>
-						Fit text to its container with binary-search precision
-						and variable-font safety.
+					<div style={{ fontSize: 76, color: '#f2f6f1', lineHeight: 1.06, fontWeight: 300 }}>
+						Fit text to
 					</div>
-					<div
-						style={{
-							fontSize: 18,
-							color: '#a89bc2',
-							marginTop: 16,
-						}}
-					>
-						Liiift Studio / type-tools
+					<div style={{ fontSize: 76, color: '#b0bbac', lineHeight: 1.06, fontWeight: 300 }}>
+						any container.
+					</div>
+				</div>
+
+				{/* Footer */}
+				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+					<div style={{ fontSize: 14, color: '#b0bbac', letterSpacing: '0.04em', display: 'flex', gap: 20 }}>
+						<span>TypeScript</span>
+						<span style={{ opacity: 0.4 }}>·</span>
+						<span>Zero dependencies</span>
+						<span style={{ opacity: 0.4 }}>·</span>
+						<span>React + Vanilla JS</span>
+					</div>
+					<div style={{ fontSize: 13, color: '#8c9589', letterSpacing: '0.04em' }}>
+						fit-flush.com
 					</div>
 				</div>
 			</div>
 		),
 		{
 			...size,
-			fonts: [
-				{
-					name: 'Inter',
-					data: fontData,
-					weight: 400,
-					style: 'normal',
-				},
-			],
+			fonts: [{ name: 'Inter', data: fontData, style: 'normal', weight: 400 }],
 		},
 	)
 }
