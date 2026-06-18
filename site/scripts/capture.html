@@ -1,0 +1,186 @@
+<!doctype html>
+<!-- README visual capture page for fit-flush. Loads the built library from ../../dist
+     and renders three labelled scenes that scripts/capture.mjs screenshots to assets/. -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+	@font-face {
+		font-family: "Merriweather VF";
+		src: url("/site/public/fonts/merriweather-variable.woff2") format("woff2");
+		font-weight: 300 900;
+		font-display: block;
+	}
+	:root {
+		--bg: oklch(0.12 0.0400 138);
+		--card: oklch(0.17 0.0320 138);
+		--card2: oklch(0.21 0.0300 138);
+		--fg: oklch(0.97 0.008 138);
+		--muted: oklch(0.74 0.022 138);
+		--accent: oklch(0.82 0.16 138);
+		--danger: oklch(0.72 0.17 28);
+		--border: oklch(0.30 0.030 138);
+	}
+	* { box-sizing: border-box; }
+	html, body { margin: 0; background: transparent; }
+	body {
+		font-family: "Inter", system-ui, sans-serif;
+		color: var(--fg);
+		-webkit-font-smoothing: antialiased;
+	}
+	.scene {
+		background: var(--bg);
+		border-radius: 18px;
+		padding: 30px;
+		overflow: hidden;
+	}
+	.tag {
+		display: inline-block;
+		font-size: 12px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+		margin: 0 0 14px;
+		font-weight: 600;
+	}
+	.fit-target {
+		font-family: "Merriweather VF", serif;
+		font-weight: 800;
+		line-height: 1.05;
+		margin: 0;
+		color: var(--fg);
+		white-space: nowrap;
+	}
+
+	/* ---- Scene 1: hero ---- */
+	#hero { width: 920px; }
+	#hero .box {
+		height: 230px;
+		border: 1px dashed var(--border);
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		padding: 0 22px;
+		background: var(--card);
+	}
+	#hero .cap { margin-top: 16px; color: var(--muted); font-size: 14px; }
+	#hero code { color: var(--accent); font-family: ui-monospace, monospace; }
+
+	/* ---- Scene 2: before / after ---- */
+	#beforeafter { width: 1040px; }
+	.ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+	.panel {
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		padding: 18px;
+		min-width: 0; /* allow grid columns to stay equal even with overflowing children */
+	}
+	.panel h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; }
+	.panel .sub { margin: 0 0 14px; font-size: 12.5px; color: var(--muted); }
+	.panel .frame {
+		height: 150px;
+		border-radius: 8px;
+		background: var(--card2);
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		padding: 0 16px;
+		position: relative;
+	}
+	.panel.bad h3 { color: var(--danger); }
+	.panel.good h3 { color: var(--accent); }
+	.panel.bad .frame { box-shadow: inset 0 0 0 1px oklch(0.72 0.17 28 / 0.5); }
+	.panel.good .frame { box-shadow: inset 0 0 0 1px oklch(0.82 0.16 138 / 0.5); }
+	#naive {
+		font-family: "Merriweather VF", serif;
+		font-weight: 800;
+		font-size: 96px;
+		line-height: 1.05;
+		margin: 0;
+		white-space: nowrap;
+		color: var(--fg);
+	}
+	/* The naive frame clips its own overflow so the grid stays intact. */
+	.panel.bad .frame { overflow: hidden; }
+
+	/* ---- Scene 3: variable-font safety ---- */
+	#vfsafety { width: 920px; }
+	.vf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+	.vf-note { margin: 16px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+	.vf-note b { color: var(--fg); font-weight: 600; }
+	.vf-note code { color: var(--accent); font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+
+<!-- Scene 1 — hero: one line fitted exactly to its container width -->
+<section class="scene" id="hero">
+	<p class="tag">fit to container — one line, no overflow</p>
+	<div class="box">
+		<p class="fit-target" id="heroText">Display&nbsp;Headlines</p>
+	</div>
+	<p class="cap">Largest <code>font-size</code> that fits the dashed box — found by binary search, written once.</p>
+</section>
+
+<!-- Scene 2 — before/after: a fixed font-size that overflows vs fit-flush -->
+<section class="scene" id="beforeafter">
+	<p class="tag">fixed font-size vs fit-flush</p>
+	<div class="ba-grid">
+		<div class="panel bad">
+			<h3>Fixed 88px</h3>
+			<p class="sub">Overflows when the container is narrow.</p>
+			<div class="frame"><p id="naive">Breaking&nbsp;News</p></div>
+		</div>
+		<div class="panel good">
+			<h3>fit-flush</h3>
+			<p class="sub">Fills the width — never clips.</p>
+			<div class="frame"><p class="fit-target" id="fitText">Breaking&nbsp;News</p></div>
+		</div>
+	</div>
+</section>
+
+<!-- Scene 3 — variable-font worst-case safety -->
+<section class="scene" id="vfsafety">
+	<p class="tag">variable-font axis safety</p>
+	<div class="vf-grid">
+		<div class="panel">
+			<h3 style="color:var(--accent)">Measured at wght 900</h3>
+			<p class="sub">Fitted with the axis held at its max.</p>
+			<div class="frame" style="height:120px"><p class="fit-target" id="vfHeavy" style="font-variation-settings:'wght' 900">Weight&nbsp;900</p></div>
+		</div>
+		<div class="panel">
+			<h3>Rendered at wght 300</h3>
+			<p class="sub">Same size — comfortable headroom remains.</p>
+			<div class="frame" style="height:120px"><p class="fit-target" id="vfLight" style="font-variation-settings:'wght' 300">Weight&nbsp;300</p></div>
+		</div>
+	</div>
+	<p class="vf-note">Pass <code>vfSettings: { wght: { max: 900 } }</code> and fit-flush measures at the heaviest axis. Animate <b>wght</b> anywhere from 300 → 900 afterwards and the text still fits — no reflow surprise.</p>
+</section>
+
+<script type="module">
+	// Import the built library exactly as a consumer would (root export).
+	import { fitFlush } from "/dist/core/adjust.js"
+
+	async function run() {
+		await document.fonts.ready
+		// settle one frame so layout boxes are final
+		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+
+		// Scene 1 — hero
+		fitFlush(document.getElementById("heroText"), { mode: "width", max: 220 })
+
+		// Scene 2 — fit-flush panel (the naive one keeps its fixed 88px and overflows)
+		fitFlush(document.getElementById("fitText"), { mode: "width", max: 200 })
+
+		// Scene 3 — both fitted with the heavy axis as the worst case, same final size
+		const opts = { mode: "width", max: 160, vfSettings: { wght: { max: 900 } } }
+		fitFlush(document.getElementById("vfHeavy"), opts)
+		fitFlush(document.getElementById("vfLight"), opts)
+
+		window.__ready = true
+	}
+	run()
+</script>
+</body>
+</html>
