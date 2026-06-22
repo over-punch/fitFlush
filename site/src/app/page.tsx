@@ -38,7 +38,7 @@ export default function Home() {
 					<span>TypeScript</span><span aria-hidden="true">&middot;</span><span>Zero dependencies</span><span aria-hidden="true">&middot;</span><span>React + Vanilla JS</span>
 				</div>
 				<p className="text-base leading-relaxed max-w-lg">
-					CSS can&rsquo;t scale a font to fill a container — <code className="text-xs font-mono">font-size</code> doesn&rsquo;t know where to stop. Fit Flush binary-searches the right size to within half a pixel, with variable-font safety built in.
+					CSS can&rsquo;t scale a font to fill a container — <code className="text-xs font-mono">font-size</code>{" "}doesn&rsquo;t know where to stop. Fit Flush binary-searches the right size to within half a pixel, with variable-font safety built in.
 				</p>
 			</section>
 
