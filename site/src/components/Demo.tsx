@@ -166,8 +166,8 @@ export default function Demo() {
 					<div
 						ref={containerRef}
 						aria-label="Live demo container — resize via the sliders below"
-						className="relative rounded border border-white/20"
-						style={{ ...containerStyle, background: "rgba(255,255,255,0.04)" }}
+						className="relative rounded border border-foreground/20"
+						style={{ ...containerStyle, background: "color-mix(in oklch, var(--foreground) 4%, transparent)" }}
 					>
 						<FittedText
 							key={modeKey}
@@ -194,7 +194,7 @@ export default function Demo() {
 						onChange={e => { setText(e.target.value); setUserEdited(true) }}
 						aria-label="Text to fit"
 						title="Type any text to see fitFlush scale it flush to the container"
-						className="w-full bg-white/5 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-white/20"
+						className="w-full bg-foreground/5 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-foreground/20"
 					/>
 				</div>
 
@@ -211,8 +211,8 @@ export default function Demo() {
 							title="Fit text on a single line — font-size scales so the text spans the full container width"
 							className={`px-3 py-1.5 rounded-full border transition-colors ${
 								!multiLine
-									? "border-white/60 bg-white/10"
-									: "border-white/20 hover:border-white/40"
+									? "border-foreground/60 bg-foreground/10"
+									: "border-foreground/20 hover:border-foreground/40"
 							}`}
 						>
 							Single line
@@ -227,8 +227,8 @@ export default function Demo() {
 							title="Allow text to wrap across multiple lines — font-size scales to fill the container area"
 							className={`px-3 py-1.5 rounded-full border transition-colors ${
 								multiLine
-									? "border-white/60 bg-white/10"
-									: "border-white/20 hover:border-white/40"
+									? "border-foreground/60 bg-foreground/10"
+									: "border-foreground/20 hover:border-foreground/40"
 							}`}
 						>
 							Multi-line
