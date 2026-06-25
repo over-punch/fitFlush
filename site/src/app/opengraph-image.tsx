@@ -18,7 +18,7 @@ export default async function OGImage() {
 		(
 			<div
 				style={{
-					background: '#010800',
+					background: '#e0fefd',
 					width: '100%',
 					height: '100%',
 					display: 'flex',
@@ -29,7 +29,7 @@ export default async function OGImage() {
 				}}
 			>
 				{/* Label */}
-				<span style={{ fontSize: 13, letterSpacing: '0.18em', color: '#b0bbac', textTransform: 'uppercase' }}>
+				<span style={{ fontSize: 13, letterSpacing: '0.18em', color: '#3a5252', textTransform: 'uppercase' }}>
 					fitFlush
 				</span>
 
@@ -42,30 +42,30 @@ export default async function OGImage() {
 								style={{
 									width: `${scale * 600}px`,
 									height: 3,
-									background: i % 2 === 0 ? '#b0bbac' : '#2b2f29',
+									background: i % 2 === 0 ? '#3a5252' : '#788b8a',
 									borderRadius: 2,
 								}}
 							/>
 						))}
 					</div>
-					<div style={{ fontSize: 76, color: '#f2f6f1', lineHeight: 1.06, fontWeight: 300 }}>
+					<div style={{ fontSize: 76, color: '#002c2c', lineHeight: 1.06, fontWeight: 300 }}>
 						Fit text to
 					</div>
-					<div style={{ fontSize: 76, color: '#b0bbac', lineHeight: 1.06, fontWeight: 300 }}>
+					<div style={{ fontSize: 76, color: '#3a5252', lineHeight: 1.06, fontWeight: 300 }}>
 						any container.
 					</div>
 				</div>
 
 				{/* Footer */}
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-					<div style={{ fontSize: 14, color: '#b0bbac', letterSpacing: '0.04em', display: 'flex', gap: 20 }}>
+					<div style={{ fontSize: 14, color: '#3a5252', letterSpacing: '0.04em', display: 'flex', gap: 20 }}>
 						<span>TypeScript</span>
 						<span style={{ opacity: 0.4 }}>·</span>
 						<span>Zero dependencies</span>
 						<span style={{ opacity: 0.4 }}>·</span>
 						<span>React + Vanilla JS</span>
 					</div>
-					<div style={{ fontSize: 13, color: '#8c9589', letterSpacing: '0.04em' }}>
+					<div style={{ fontSize: 13, color: '#586e6d', letterSpacing: '0.04em' }}>
 						fit-flush.com
 					</div>
 				</div>
