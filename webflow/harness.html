@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>fitFlush — Webflow embed harness</title>
+	<!-- Roboto Flex is a variable font (wght + wdth axes) so the data-ff-vf max-axis
+	     safety path is exercised, not just plain font-size fitting. -->
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
+		rel="stylesheet"
+	/>
+	<style>
+		body {
+			margin: 0;
+			padding: 2rem;
+			background: #10131a;
+			color: #f4f4f5;
+			font-family: system-ui, sans-serif;
+		}
+		p.note {
+			max-width: 46rem;
+			line-height: 1.5;
+			color: #a1a1aa;
+		}
+		/* Each .box is the CONTAINER — fitFlush fits its child to these fixed dimensions.
+		   Resize the window (or the boxes below via the resize handle) to watch the text
+		   re-fit live, driven by the core's ResizeObserver. */
+		.box {
+			margin: 1.5rem 0;
+			border: 1px dashed #3f3f46;
+			background: #181b22;
+			overflow: hidden;
+			resize: both;
+		}
+		.box-both { width: 60vw; height: 220px; }
+		.box-width { width: 50vw; height: 120px; }
+		.fit {
+			margin: 0;
+			font-family: 'Roboto Flex', sans-serif;
+			font-weight: 700;
+			line-height: 1;
+			color: #fafafa;
+		}
+	</style>
+</head>
+<body>
+	<h1>fitFlush — Webflow embed harness</h1>
+	<p class="note">
+		What "working" looks like: on load, each headline below is sized by binary search to
+		exactly fill its dashed container. The first box fits <strong>both</strong> width and
+		height; the second fits <strong>width</strong> only (single line, no wrap). Drag a box's
+		bottom-right resize handle, or resize the window — the text re-fits live with no overflow.
+		Open the console and run <code>FitFlush.destroy(document.querySelector('.fit-both'))</code>
+		to restore the original size, or <code>FitFlush.refit()</code> to re-fit everything.
+	</p>
+
+	<!-- mode=both: fit the largest size satisfying width AND height. vfSettings holds wght at
+	     its max (900) during measurement so the size stays safe if the weight animates up later. -->
+	<div class="box box-both">
+		<p
+			class="fit fit-both"
+			data-fitflush
+			data-ff-mode="both"
+			data-ff-min="12"
+			data-ff-max="400"
+			data-ff-padding="8"
+			data-ff-vf="wght:900"
+		>Flush to the box</p>
+	</div>
+
+	<!-- mode=width: single-line analytical width fit. -->
+	<div class="box box-width">
+		<p
+			class="fit"
+			data-fitflush
+			data-ff-mode="width"
+			data-ff-precision="0.25"
+			data-ff-padding-x="12"
+		>Edge to edge</p>
+	</div>
+
+	<!-- The built IIFE bundle — assigns window.FitFlush and auto-inits on DOMContentLoaded +
+	     document.fonts.ready. Run `npm run build:webflow` first to produce this file. -->
+	<script src="../dist/fitflush.webflow.min.js"></script>
+</body>
+</html>
