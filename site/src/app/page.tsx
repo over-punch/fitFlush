@@ -4,6 +4,7 @@ import Demo from "@/components/Demo"
 import CopyInstall from "@/components/CopyInstall"
 import CodeBlock from "@/components/CodeBlock"
 import SiteFooter from "@/components/SiteFooter"
+import PortsSection from "@/components/PortsSection"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
 import { MagnetChar } from "@liiift-studio/magnettype"
@@ -140,6 +141,14 @@ handle.dispose() // restore original fontSize, whiteSpace, and --ff-size`} />
 					</div>
 				</div>
 			</section>
+
+			<PortsSection
+				npm="@liiift-studio/fit-flush"
+				bundle="fitflush"
+				attr="data-fitflush"
+				framerComponent="FitFlush"
+				repo="Liiift-Studio/fitFlush"
+			/>
 
 			{/* Footer */}
 			<SiteFooter current="fitFlush" npmVersion={version} siteVersion={siteVersion} />
