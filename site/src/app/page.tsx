@@ -145,7 +145,7 @@ handle.dispose() // restore original fontSize, whiteSpace, and --ff-size`} />
 			<PortsSection
 				npm="@liiift-studio/fit-flush"
 				bundle="fitflush"
-				attr="data-fitflush"
+				attr="data-fitflush" figma="partial"
 				framerComponent="FitFlush"
 				repo="Liiift-Studio/fitFlush"
 			/>
