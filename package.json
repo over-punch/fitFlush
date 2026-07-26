@@ -32,7 +32,7 @@
 	"homepage": "https://fit-flush.com",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Liiift-Studio/fitFlush.git"
+		"url": "git+https://github.com/Liiift-Studio/fitFlush.git"
 	},
 	"bugs": {
 		"url": "https://github.com/Liiift-Studio/fitFlush/issues"
