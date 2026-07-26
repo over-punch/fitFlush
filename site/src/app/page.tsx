@@ -127,7 +127,7 @@ handle.dispose() // restore original fontSize, whiteSpace, and --ff-size`} />
 									<th className="pb-2 font-normal">Description</th>
 								</tr>
 							</thead>
-							<tbody className="text-muted zebra-bleed">
+							<tbody className="text-muted zebra">
 								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">mode</td><td className="py-2 pr-6">&apos;both&apos;</td><td className="py-2">Which dimension to fill: <code className="font-mono">&apos;width&apos;</code>, <code className="font-mono">&apos;height&apos;</code>, or <code className="font-mono">&apos;both&apos;</code>.</td></tr>
 								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">min</td><td className="py-2 pr-6">8</td><td className="py-2">Minimum font-size in px.</td></tr>
 								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">max</td><td className="py-2 pr-6">400</td><td className="py-2">Maximum font-size in px.</td></tr>
