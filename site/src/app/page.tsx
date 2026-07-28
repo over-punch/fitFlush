@@ -1,13 +1,12 @@
 // fitFlush landing page — hero, live demo, how it works, usage, API, footer
 
 import Demo from "@/components/Demo"
-import CopyInstall from "@/components/CopyInstall"
+import Hero from "@/components/Hero"
 import CodeBlock from "@/components/CodeBlock"
 import SiteFooter from "@/components/SiteFooter"
 import PortsSection from "@/components/PortsSection"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
-import { MagnetChar } from "@liiift-studio/magnettype"
 
 /** Landing page with hero demo, install command, and code examples. */
 export default function Home() {
@@ -15,33 +14,17 @@ export default function Home() {
 		<main className="flex flex-col items-center px-6 py-20 gap-24">
 
 			{/* Hero */}
-			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
-				<div className="flex flex-col gap-2">
-					<p className="text-xs uppercase tracking-[0.18em] font-medium text-muted">text-to-fit sizing</p>
-					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 300, "opsz" 144', lineHeight: "1.05em" }}>
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }}>Fit text to</MagnetChar><br />
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }} style={{ color: "var(--foreground-subtle)", fontStyle: "italic" }}>any container.</MagnetChar>
-					</h1>
-				</div>
-				<div className="flex flex-wrap items-center gap-4">
-					<CopyInstall />
-					<a
-						href="https://github.com/Liiift-Studio/fitFlush"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="fitFlush on GitHub (opens in new tab)"
-						className="text-sm text-muted hover:text-foreground transition-colors"
-					>
-						GitHub ↗
-					</a>
-				</div>
-				<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted tracking-wide">
-					<span>TypeScript</span><span aria-hidden="true">&middot;</span><span>Zero dependencies</span><span aria-hidden="true">&middot;</span><span>React + Vanilla JS</span>
-				</div>
+			<Hero
+				eyebrow="text-to-fit sizing"
+				title={[{ text: "Fit text to" }, { text: "any container.", italic: true, subtle: true }]}
+				install="@liiift-studio/fit-flush"
+				github="https://github.com/Liiift-Studio/fitFlush"
+				tech={["TypeScript", "Zero dependencies", "React + Vanilla JS"]}
+			>
 				<p className="text-base leading-relaxed max-w-lg">
 					CSS can&rsquo;t scale a font to fill a container — <code className="text-xs font-mono">font-size</code>{" "}doesn&rsquo;t know where to stop. Fit Flush binary-searches the right size to within half a pixel, with variable-font safety built in.
 				</p>
-			</section>
+			</Hero>
 
 			{/* Demo */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-4">
