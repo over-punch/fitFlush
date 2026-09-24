@@ -32,10 +32,10 @@
 	"homepage": "https://fit-flush.com",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Liiift-Studio/fitFlush.git"
+		"url": "git+https://github.com/over-punch/fitFlush.git"
 	},
 	"bugs": {
-		"url": "https://github.com/Liiift-Studio/fitFlush/issues"
+		"url": "https://github.com/over-punch/fitFlush/issues"
 	},
 	"author": "Quinn Keaveney <quinn@liiift.studio>",
 	"type": "module",
