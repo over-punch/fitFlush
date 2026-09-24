@@ -1,4 +1,4 @@
-// Public types, constants, and defaults for @liiift-studio/fit-flush.
+// Public types, constants, and defaults for @overpunch/fit-flush.
 
 /**
  * Options for fitting text into a container. All fields optional.

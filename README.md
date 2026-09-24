@@ -1,10 +1,10 @@
 # fit-flush
 
-[![npm](https://img.shields.io/npm/v/%40liiift-studio%2Ffit-flush.svg)](https://www.npmjs.com/package/@liiift-studio/fit-flush) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![part of liiift type-tools](https://img.shields.io/badge/liiift-type--tools-blueviolet)](https://github.com/Liiift-Studio/type-tools)
+[![npm](https://img.shields.io/npm/v/%40liiift-studio%2Ffit-flush.svg)](https://www.npmjs.com/package/@overpunch/fit-flush) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![part of liiift type-tools](https://img.shields.io/badge/liiift-type--tools-blueviolet)](https://github.com/Liiift-Studio/type-tools)
 
 **Fit text to its container.** Binary-search sizing with variable-font axis safety, for when neither `clamp()` nor container-query units will do the job.
 
-[Site](https://fit-flush.com) · [npm](https://www.npmjs.com/package/@liiift-studio/fit-flush) · [GitHub](https://github.com/Liiift-Studio/fitFlush)
+[Site](https://fit-flush.com) · [npm](https://www.npmjs.com/package/@overpunch/fit-flush) · [GitHub](https://github.com/Liiift-Studio/fitFlush)
 
 TypeScript · Zero runtime dependencies · React + Vanilla JS
 
@@ -31,7 +31,7 @@ CSS has no way to say *"size this text exactly as large as possible without over
 ## Install
 
 ```bash
-npm install @liiift-studio/fit-flush
+npm install @overpunch/fit-flush
 ```
 
 ---
@@ -40,13 +40,13 @@ npm install @liiift-studio/fit-flush
 
 > **Next.js App Router:** add `"use client"` at the top of any file using the hook or component — fit-flush touches `window` and `ResizeObserver`.
 
-> **Import paths:** vanilla functions (`fitFlush`, `fitFlushLive`) come from the package root; the React layer (`useFitFlush`, `FitFlushText`) lives on the `@liiift-studio/fit-flush/react` subpath, so vanilla-JS bundles stay free of any React import.
+> **Import paths:** vanilla functions (`fitFlush`, `fitFlushLive`) come from the package root; the React layer (`useFitFlush`, `FitFlushText`) lives on the `@overpunch/fit-flush/react` subpath, so vanilla-JS bundles stay free of any React import.
 
 ### React component
 
 ```tsx
 "use client"
-import { FitFlushText } from "@liiift-studio/fit-flush/react"
+import { FitFlushText } from "@overpunch/fit-flush/react"
 
 export default function Hero() {
 	return (
@@ -65,7 +65,7 @@ export default function Hero() {
 
 ```tsx
 "use client"
-import { useFitFlush } from "@liiift-studio/fit-flush/react"
+import { useFitFlush } from "@overpunch/fit-flush/react"
 
 // Inside a React component:
 export function Title() {
@@ -79,7 +79,7 @@ The hook returns `{ ref, size }` — attach `ref` to the element and read `size`
 ### Vanilla JS — one-shot
 
 ```ts
-import { fitFlush } from "@liiift-studio/fit-flush"
+import { fitFlush } from "@overpunch/fit-flush"
 
 const target = document.querySelector<HTMLElement>("h1")!
 const size = fitFlush(target, { mode: "both", max: 240 })
@@ -88,7 +88,7 @@ const size = fitFlush(target, { mode: "both", max: 240 })
 ### Vanilla JS — live handle
 
 ```ts
-import { fitFlushLive } from "@liiift-studio/fit-flush"
+import { fitFlushLive } from "@overpunch/fit-flush"
 
 const target = document.querySelector<HTMLElement>("h1")!
 const handle = fitFlushLive(target, { mode: "both", max: 240 })
@@ -120,7 +120,7 @@ Both lines below were fitted with `wght` held at `900`. The heavy text fills its
 ### TypeScript
 
 ```ts
-import { fitFlush, type FitFlushOptions } from "@liiift-studio/fit-flush"
+import { fitFlush, type FitFlushOptions } from "@overpunch/fit-flush"
 
 const options: FitFlushOptions = { mode: "both", min: 12, max: 320, precision: 0.25 }
 const size: number = fitFlush(document.querySelector<HTMLElement>("h1")!, options)
@@ -168,7 +168,7 @@ fit-flush is a one-shot size — no animation, nothing to honour. A future anima
 
 ### Requirements
 
-Browser APIs: `ResizeObserver`, `document.fonts.ready`, and `getBoundingClientRect` — available in all evergreen browsers. No polyfills are bundled. React is an **optional** peer dependency (`>=17`); the vanilla functions need no React at all. The package ships ESM only, with zero runtime dependencies and `"sideEffects": false` for clean tree-shaking. For the exact install footprint see [Bundlephobia](https://bundlephobia.com/package/@liiift-studio/fit-flush).
+Browser APIs: `ResizeObserver`, `document.fonts.ready`, and `getBoundingClientRect` — available in all evergreen browsers. No polyfills are bundled. React is an **optional** peer dependency (`>=17`); the vanilla functions need no React at all. The package ships ESM only, with zero runtime dependencies and `"sideEffects": false` for clean tree-shaking. For the exact install footprint see [Bundlephobia](https://bundlephobia.com/package/@overpunch/fit-flush).
 
 ---
 

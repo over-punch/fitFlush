@@ -1,4 +1,4 @@
-// Public API exports for @liiift-studio/fit-flush.
+// Public API exports for @overpunch/fit-flush.
 // React-specific exports (useFitFlush, FitFlushText) live in the ./react subpath
 // to keep vanilla-JS bundles free of React imports.
 

@@ -17,7 +17,7 @@ export default function Home() {
 			<Hero
 				eyebrow="text-to-fit sizing"
 				title={[{ text: "Fit text to" }, { text: "any container.", italic: true, subtle: true }]}
-				install="@liiift-studio/fit-flush"
+				install="@overpunch/fit-flush"
 				github="https://github.com/Liiift-Studio/fitFlush"
 				tech={["TypeScript", "Zero dependencies", "React + Vanilla JS"]}
 			>
@@ -66,7 +66,7 @@ export default function Home() {
 				<div className="flex flex-col gap-8 text-sm">
 					<div className="flex flex-col gap-3">
 						<p className="text-muted">Drop-in component</p>
-						<CodeBlock code={`import { FitFlushText } from '@liiift-studio/fit-flush/react'
+						<CodeBlock code={`import { FitFlushText } from '@overpunch/fit-flush/react'
 
 <FitFlushText mode="width">
   Display Headline
@@ -74,21 +74,21 @@ export default function Home() {
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="text-muted">Hook — attach to any element</p>
-						<CodeBlock code={`import { useFitFlush } from '@liiift-studio/fit-flush/react'
+						<CodeBlock code={`import { useFitFlush } from '@overpunch/fit-flush/react'
 
 const { ref } = useFitFlush({ mode: 'both' })
 <h1 ref={ref}>Display Headline</h1>`} />
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="text-muted">Vanilla JS — one-shot</p>
-						<CodeBlock code={`import { fitFlush } from '@liiift-studio/fit-flush'
+						<CodeBlock code={`import { fitFlush } from '@overpunch/fit-flush'
 
 const el = document.querySelector('h1')
 fitFlush(el, { mode: 'width', min: 12, max: 400 })`} />
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="text-muted">Vanilla JS — live (ResizeObserver + fonts.ready)</p>
-						<CodeBlock code={`import { fitFlushLive } from '@liiift-studio/fit-flush'
+						<CodeBlock code={`import { fitFlushLive } from '@overpunch/fit-flush'
 
 const handle = fitFlushLive(el, {
   mode: 'both',
@@ -126,7 +126,7 @@ handle.dispose() // restore original fontSize, whiteSpace, and --ff-size`} />
 			</section>
 
 			<PortsSection
-				npm="@liiift-studio/fit-flush"
+				npm="@overpunch/fit-flush"
 				bundle="fitflush"
 				attr="data-fitflush" figma="partial"
 				framerComponent="FitFlush"
