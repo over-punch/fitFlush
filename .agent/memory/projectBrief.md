@@ -4,7 +4,7 @@
 `fit-flush` is a text-container-fit sizing tool for the type-tools suite. It resizes type so it fills its container as large as possible without overflowing, with binary-search precision and variable-font axis safety.
 
 - npm: `@overpunch/fit-flush`
-- Repo: `Liiift-Studio/fitFlush`
+- Repo: `over-punch/fitFlush`
 - Domain: fit-flush.com
 
 ## Problem Statement

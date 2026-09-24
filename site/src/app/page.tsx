@@ -18,7 +18,7 @@ export default function Home() {
 				eyebrow="text-to-fit sizing"
 				title={[{ text: "Fit text to" }, { text: "any container.", italic: true, subtle: true }]}
 				install="@overpunch/fit-flush"
-				github="https://github.com/Liiift-Studio/fitFlush"
+				github="https://github.com/over-punch/fitFlush"
 				tech={["TypeScript", "Zero dependencies", "React + Vanilla JS"]}
 			>
 				<p className="text-base leading-relaxed max-w-lg">
@@ -130,7 +130,7 @@ handle.dispose() // restore original fontSize, whiteSpace, and --ff-size`} />
 				bundle="fitflush"
 				attr="data-fitflush" figma="partial"
 				framerComponent="FitFlush"
-				repo="Liiift-Studio/fitFlush"
+				repo="over-punch/fitFlush"
 			/>
 
 			{/* Footer */}
