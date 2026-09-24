@@ -1,5 +1,5 @@
 {
-	"name": "@liiift-studio/fit-flush",
+	"name": "@overpunch/fit-flush",
 	"version": "1.0.9",
 	"description": "Binary-search font-size fitting — lock any text to its container width, height, or both, with variable-font axis safety",
 	"keywords": [

@@ -2,8 +2,8 @@
 
 // fitFlush demo — interactive text fitting with per-axis fill and container controls
 import { useState, useEffect, useRef, useDeferredValue, useCallback, useMemo } from "react"
-import { useFitFlush } from "@liiift-studio/fit-flush/react"
-import type { FitFlushOptions } from "@liiift-studio/fit-flush"
+import { useFitFlush } from "@overpunch/fit-flush/react"
+import type { FitFlushOptions } from "@overpunch/fit-flush"
 
 const DEFAULT_TEXT_SINGLE = "Binary Search"
 const DEFAULT_TEXT_MULTI = "The quick brown fox jumps over the lazy dog while the five boxing wizards jump quickly at dawn."

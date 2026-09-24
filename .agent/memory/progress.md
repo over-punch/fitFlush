@@ -31,7 +31,7 @@
 - **Group fit** (`shared` option for headline grids — v0.2.0)
 - **`onFit` callback** hook
 - **Measurement caching** — skip re-measurement when text, container size, and options haven't changed
-- **npm publish** as `@liiift-studio/fit-flush` once site is live and Lighthouse passes
+- **npm publish** as `@overpunch/fit-flush` once site is live and Lighthouse passes
 
 ## Known concerns
 
