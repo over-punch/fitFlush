@@ -183,7 +183,7 @@ Browser APIs: `ResizeObserver`, `document.fonts.ready`, and `getBoundingClientRe
 
 ## License
 
-MIT © [Liiift Studio](https://liiift.studio). Part of the [type-tools](https://github.com/over-punch/type-tools) suite.
+MIT © [Liiift Studio](https://overpunch.ca). Part of the [type-tools](https://github.com/over-punch/type-tools) suite.
 
 <details>
 <summary><strong>Maintainer note — <code>next</code> in devDependencies</strong></summary>

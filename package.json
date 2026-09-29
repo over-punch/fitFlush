@@ -37,7 +37,7 @@
 	"bugs": {
 		"url": "https://github.com/over-punch/fitFlush/issues"
 	},
-	"author": "Quinn Keaveney <quinn@liiift.studio>",
+	"author": "Quinn Keaveney <quinn@overpunch.ca>",
 	"type": "module",
 	"main": "./dist/index.js",
 	"module": "./dist/index.js",
