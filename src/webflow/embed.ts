@@ -2,8 +2,8 @@
 // Auto-fits any element marked with [data-fitflush] to its container, reading options from
 // data-* attributes, and keeps re-fitting on resize / font load via the core's live handle.
 // Exposes a small window.FitFlush API for manual control.
-import { fitFlushLive } from '../core/adjust'
-import type { FitFlushHandle, FitFlushOptions } from '../core/types'
+import { fitFlushLive } from '../core/adjust.js'
+import type { FitFlushHandle, FitFlushOptions } from '../core/types.js'
 
 /** Attribute that opts an element in to fit-flush sizing. */
 const OPT_IN_ATTR = 'data-fitflush'
@@ -52,7 +52,8 @@ function parseVfSettings(raw: string): Record<string, { max: number }> | undefin
  *   data-ff-padding-x  — horizontal inset in px (overrides data-ff-padding on x)
  *   data-ff-padding-y  — vertical inset in px (overrides data-ff-padding on y)
  *   data-ff-vf         — variable-font max axes, e.g. "wght:900,wdth:125"
- *   data-ff-container  — CSS selector for a container override (default: parent element)
+ *   data-ff-container  — CSS selector for a container override: the nearest ancestor matching it
+ *                        (default: parent element). An invalid selector is ignored with a warning.
  *
  * @param el - The opted-in element
  */
@@ -85,8 +86,15 @@ function readOptions(el: HTMLElement): FitFlushOptions {
 		if (vf) opts.vfSettings = vf
 	}
 	if (d.ffContainer) {
-		const container = document.querySelector<HTMLElement>(d.ffContainer)
-		if (container) opts.container = container
+		// The nearest matching ancestor, so the same selector on several cards gives each element
+		// its own card (a global querySelector would hand every element the first card).
+		try {
+			const container = el.parentElement?.closest<HTMLElement>(d.ffContainer)
+			if (container) opts.container = container
+			else console.warn(`[fit-flush] data-ff-container "${d.ffContainer}" matches no ancestor; using the parent element`)
+		} catch {
+			console.warn(`[fit-flush] data-ff-container "${d.ffContainer}" is not a valid selector; using the parent element`)
+		}
 	}
 
 	return opts
@@ -140,7 +148,33 @@ function destroy(el: HTMLElement): void {
  * @param root - Element or document to search (default: document)
  */
 function init(root: ParentNode = document): void {
-	root.querySelectorAll<HTMLElement>(`[${OPT_IN_ATTR}]`).forEach(initElement)
+	root.querySelectorAll<HTMLElement>(`[${OPT_IN_ATTR}]`).forEach((el) => {
+		// One bad element must not stop the rest from being fitted.
+		try {
+			initElement(el)
+		} catch (err) {
+			console.warn('[fit-flush] could not fit an element', el, err)
+		}
+	})
+}
+
+/** Fits [data-fitflush] elements added after page load (CMS lists, interactions). */
+function watchForNewElements(): void {
+	if (typeof MutationObserver === 'undefined' || !document.body) return
+	new MutationObserver((records) => {
+		for (const rec of records) {
+			rec.addedNodes.forEach((n) => {
+				// Skip fit-flush's own measuring clone (added and removed during a fit).
+				if (!(n instanceof HTMLElement) || !n.isConnected || n.hasAttribute('data-ff-probe')) return
+				const found = n.matches(`[${OPT_IN_ATTR}]`) ? [n] : []
+				n.querySelectorAll<HTMLElement>(`[${OPT_IN_ATTR}]`).forEach((el) => found.push(el))
+				for (const el of found) {
+					if (INSTANCES.has(el)) continue
+					try { initElement(el) } catch (err) { console.warn('[fit-flush] could not fit an element', el, err) }
+				}
+			})
+		}
+	}).observe(document.body, { childList: true, subtree: true })
 }
 
 /**
@@ -156,6 +190,7 @@ function autoInit(): void {
 		} else {
 			init()
 		}
+		watchForNewElements()
 	}
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', run, { once: true })
