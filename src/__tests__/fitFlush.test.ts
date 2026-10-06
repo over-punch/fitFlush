@@ -182,20 +182,38 @@ describe('fitFlush — whiteSpace management', () => {
 		expect(target.style.whiteSpace).toBe('nowrap')
 	})
 
-	it('clears whiteSpace in height mode', () => {
+	it('clears the nowrap a width fit wrote when refitting in height mode', () => {
 		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
 		const { target } = setupDOM('Hello world')
-		target.style.whiteSpace = 'nowrap'
+		fitFlush(target, { mode: 'width' })
+		expect(target.style.whiteSpace).toBe('nowrap')
 		fitFlush(target, { mode: 'height' })
 		expect(target.style.whiteSpace).toBe('')
 	})
 
-	it('clears whiteSpace in both mode', () => {
+	it("keeps the author's own white-space in height mode", () => {
 		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
 		const { target } = setupDOM('Hello world')
-		target.style.whiteSpace = 'nowrap'
+		target.style.whiteSpace = 'pre-wrap'
+		fitFlush(target, { mode: 'height' })
+		expect(target.style.whiteSpace).toBe('pre-wrap')
+	})
+
+	it('clears the nowrap a width fit wrote when refitting in both mode', () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('Hello world')
+		fitFlush(target, { mode: 'width' })
+		expect(target.style.whiteSpace).toBe('nowrap')
 		fitFlush(target, { mode: 'both' })
 		expect(target.style.whiteSpace).toBe('')
+	})
+
+	it("keeps the author's own white-space in both mode", () => {
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		const { target } = setupDOM('Hello world')
+		target.style.whiteSpace = 'pre-wrap'
+		fitFlush(target, { mode: 'both' })
+		expect(target.style.whiteSpace).toBe('pre-wrap')
 	})
 })
 

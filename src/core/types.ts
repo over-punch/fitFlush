@@ -29,9 +29,14 @@ export interface FitFlushOptions {
 	 * held at its `max`, so the computed size stays safe under later axis animation.
 	 * Existing axes already set on the target are preserved; only the listed axes
 	 * are overridden to their max.
-	 * Example: { wght: { max: 900 }, wdth: { max: 125 } }
+	 *
+	 * The max isn't always the widest end: an optical-size axis (`opsz`) is widest at its
+	 * minimum. Give `min` as well and the size must fit at both ends (all maxes, and all
+	 * listed mins). Entries with a tag that isn't four characters, or a non-finite value,
+	 * are ignored with a warning.
+	 * Example: { wght: { max: 900 }, wdth: { max: 125 }, opsz: { min: 8, max: 144 } }
 	 */
-	vfSettings?: Record<string, { max: number }>
+	vfSettings?: Record<string, { max: number; min?: number }>
 
 	/** Optional container override. Defaults to `target.parentElement`. */
 	container?: HTMLElement | null
@@ -49,7 +54,7 @@ export interface FitFlushHandle {
 	readonly size: number
 	/** Re-run the fit now, e.g. after changing text content. Returns the new size. */
 	refit: () => number
-	/** Stop observing, restore the original inline fontSize on the target. */
+	/** Stop observing, restore the target's original inline styles. */
 	dispose: () => void
 }
 

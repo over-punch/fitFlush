@@ -1,110 +1,102 @@
-// Measurement primitives for fit-flush: off-screen probe construction, style
-// copy, and the two size-search strategies (analytical fast path + binary search).
+// Measurement primitives for fit-flush: a hidden clone of the target as the measuring probe,
+// the fit test, and the two size-search strategies (analytical fast path + binary search).
 
-import { FIT_FLUSH_CLASSES } from './types'
+import { FIT_FLUSH_CLASSES } from './types.js'
 
-/** Computed style properties copied from target → probe so measurement matches visual. */
-const COPIED_STYLE_PROPS = [
-	'font-family',
-	'font-weight',
-	'font-style',
-	'font-stretch',
-	'font-variation-settings',
-	'font-feature-settings',
-	'letter-spacing',
-	'word-spacing',
-	'text-transform',
-	'font-kerning',
-] as const
+/** Attribute marking the measuring clone, so observers and embeds can ignore it. */
+export const PROBE_ATTR = 'data-ff-probe'
 
 /**
- * Create a detached measurement probe cloned stylistically from `target`.
- * The probe is position: fixed, off-screen, visibility: hidden, aria-hidden,
- * and appended to document.body — never injected into the target's subtree.
+ * The transform scale of an element (1 when untransformed): getBoundingClientRect is visual,
+ * offsetWidth is layout. Differences of a pixel or less are sub-pixel rounding, not a transform.
  */
-export function createProbe(target: HTMLElement, text: string): HTMLElement {
-	const probe = document.createElement('span')
-	probe.className = FIT_FLUSH_CLASSES.probe
+export function layoutScale(el: HTMLElement): number {
+	const visual = el.getBoundingClientRect().width
+	const layout = el.offsetWidth
+	if (!(layout > 0) || !(visual > 0) || Math.abs(visual - layout) <= 1) return 1
+	return visual / layout
+}
+
+/**
+ * Create the measuring probe: a hidden clone of `target` placed right after it, in the same
+ * parent, so it inherits exactly what the target renders with — nested markup and <br>, letter-
+ * and word-spacing in their own units, font-size-adjust, small caps, hyphens, overflow-wrap, and
+ * the target's own padding and text-indent. Only font-size (and, for vfSettings, the axes)
+ * change between measurements.
+ */
+export function createProbe(target: HTMLElement): HTMLElement {
+	const probe = target.cloneNode(true) as HTMLElement
+	probe.removeAttribute('id')
+	probe.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'))
+	probe.classList.add(FIT_FLUSH_CLASSES.probe)
 	probe.setAttribute('aria-hidden', 'true')
-	probe.textContent = text
-
-	const computed = window.getComputedStyle(target)
-	for (const prop of COPIED_STYLE_PROPS) {
-		const value = computed.getPropertyValue(prop)
-		if (value) probe.style.setProperty(prop, value)
-	}
-
-	// line-height needs special handling: getComputedStyle resolves unitless
-	// values (e.g. 1.1) to pixels (e.g. "440px" at 400px font-size). A fixed
-	// pixel line-height doesn't scale with the probe's font-size changes,
-	// breaking the binary search. Convert back to a unitless ratio.
-	const computedLH = computed.getPropertyValue('line-height')
-	if (computedLH && computedLH !== 'normal') {
-		const lhPx = parseFloat(computedLH)
-		const fsPx = parseFloat(computed.fontSize) || 16
-		if (lhPx > 0 && fsPx > 0) {
-			probe.style.lineHeight = String(lhPx / fsPx)
-		}
-	}
+	probe.setAttribute(PROBE_ATTR, '')
 
 	const s = probe.style
-	s.position = 'fixed'
-	s.left = '-99999px'
+	s.position = 'absolute'
+	s.left = '0'
 	s.top = '0'
 	s.visibility = 'hidden'
 	s.pointerEvents = 'none'
 	s.margin = '0'
-	s.padding = '0'
-	s.border = '0'
-	// display is set by configureProbe based on mode
+	s.transition = 'none'
+	s.animation = 'none'
+	s.boxSizing = 'border-box'
+	s.minWidth = '0'
+	s.maxWidth = 'none'
+	s.minHeight = '0'
+	s.maxHeight = 'none'
+	s.height = 'auto'
+	// display and width are set by configureProbe based on mode
 
-	document.body.appendChild(probe)
+	target.insertAdjacentElement('afterend', probe)
 	return probe
 }
 
-/** Configure the probe for a given fit mode and container inner width. */
+/** Configure the probe for a given fit mode and container inner width (layout px). */
 export function configureProbe(
 	probe: HTMLElement,
 	mode: 'width' | 'height' | 'both',
 	innerWidth: number,
+	authorWhiteSpace: string,
 ): void {
 	if (mode === 'width') {
-		// inline-block with nowrap: probe expands to the natural width of a single line.
+		// One line at its natural width. Preserved whitespace (pre) keeps its own line breaks.
 		probe.style.display = 'inline-block'
-		probe.style.whiteSpace = 'nowrap'
-		probe.style.width = 'auto'
+		probe.style.whiteSpace = authorWhiteSpace === 'pre' || authorWhiteSpace === 'pre-wrap' || authorWhiteSpace === 'break-spaces' ? 'pre' : 'nowrap'
+		probe.style.width = 'max-content'
 	} else {
-		// block with explicit width: text wraps exactly as the real element would.
+		// Block at the container's width: text wraps exactly as the real element would
+		// (the author's own white-space, hyphens and overflow-wrap apply).
 		probe.style.display = 'block'
-		probe.style.whiteSpace = 'normal'
 		probe.style.width = `${innerWidth}px`
 	}
 }
 
 /**
- * Does the probe's current rendered box fit within the inner container bounds?
- * For height/both modes the probe's CSS width is already set to innerWidth,
- * so text wraps within that constraint — only height needs checking. Comparing
- * the probe's BCR width against innerWidth would cause false negatives from
- * sub-pixel rounding of the CSS width the browser itself set.
+ * Does the probe's current rendered box fit within the inner container bounds (layout px)?
+ * Width mode compares the single-line width. Height mode compares height. Both mode also
+ * requires that nothing overflows sideways — a long word or a nowrap line wider than the box.
  */
 export function fits(
 	probe: HTMLElement,
 	mode: 'width' | 'height' | 'both',
 	innerWidth: number,
 	innerHeight: number,
+	scale = 1,
 ): boolean {
 	const rect = probe.getBoundingClientRect()
-	if (mode === 'width') return rect.width <= innerWidth
-	// height and both: probe CSS width enforces wrapping, only check height.
-	return rect.height <= innerHeight
+	if (mode === 'width') return rect.width / scale <= innerWidth
+	if (rect.height / scale > innerHeight) return false
+	if (mode === 'both' && probe.scrollWidth > probe.clientWidth) return false
+	return true
 }
 
 /**
- * Analytical fast path for `mode: 'width'` single-line fit: measure once at a
- * reference size, then linearly predict the target size. Verifies the prediction
- * and bisects downward only if hinting non-linearity caused an overshoot.
- * Typical cost: 1 measurement + 1 verify.
+ * Analytical fast path for `mode: 'width'` single-line fit: measure once at a reference size,
+ * predict the target size linearly, then correct. Width isn't exactly linear in font size
+ * (hinting, and optical-size axes that follow the size), so the prediction is verified and
+ * bisected — downward if it overflows, upward if it leaves more than `precision` of size unused.
  */
 export function analyticalWidthFit(
 	probe: HTMLElement,
@@ -112,61 +104,64 @@ export function analyticalWidthFit(
 	min: number,
 	max: number,
 	precision: number,
+	ok: (size: number) => boolean,
+	scale = 1,
 ): number {
 	const REFERENCE = 100
 	probe.style.fontSize = `${REFERENCE}px`
-	const measured = probe.getBoundingClientRect().width
+	const measured = probe.getBoundingClientRect().width / scale
 	if (measured <= 0) return min
 
-	let predicted = (REFERENCE * innerWidth) / measured
-	predicted = Math.max(min, Math.min(max, predicted))
+	const predicted = Math.max(min, Math.min(max, (REFERENCE * innerWidth) / measured))
 
-	// Verify — text rendering at small sizes can be slightly non-linear.
-	probe.style.fontSize = `${predicted}px`
-	if (probe.getBoundingClientRect().width <= innerWidth) {
-		return predicted
+	let lo: number
+	let hi: number
+	if (ok(predicted)) {
+		// Fits: done if the next step up would overflow (or the cap is reached).
+		if (predicted >= max || !ok(Math.min(max, predicted + precision))) return predicted
+		lo = predicted
+		hi = Math.min(max, predicted * 1.5)
+		if (ok(hi)) return hi
+	} else {
+		if (!ok(min)) return min
+		lo = min
+		hi = predicted
 	}
-
-	// Overshot — bisect downward until it fits.
-	let lo = min
-	let hi = predicted
 	while (hi - lo > precision) {
 		const mid = (lo + hi) / 2
-		probe.style.fontSize = `${mid}px`
-		if (probe.getBoundingClientRect().width <= innerWidth) lo = mid
+		if (ok(mid)) lo = mid
 		else hi = mid
 	}
 	return lo
 }
 
 /**
- * Binary search across [min, max] for the largest font-size that fits the
- * configured mode. Converges in ~log2((max-min)/precision) iterations — for
- * [8, 400] at 0.5px precision, ~10 probe measurements.
+ * Binary search across [min, max] for the largest font-size that `ok` accepts. Converges in
+ * ~log2((max-min)/precision) iterations — for [8, 400] at 0.5px precision, ~10 measurements.
+ * `floor` is a size already known to fit (e.g. the current size), searched up from.
  */
 export function binarySearchFit(
-	probe: HTMLElement,
-	mode: 'width' | 'height' | 'both',
-	innerWidth: number,
-	innerHeight: number,
 	min: number,
 	max: number,
 	precision: number,
+	ok: (size: number) => boolean,
+	floor?: number,
 ): number {
 	// Short-circuit: if the max already fits, no search needed.
-	probe.style.fontSize = `${max}px`
-	if (fits(probe, mode, innerWidth, innerHeight)) return max
-
-	// Short-circuit: if even the min overflows, return min (can't do better).
-	probe.style.fontSize = `${min}px`
-	if (!fits(probe, mode, innerWidth, innerHeight)) return min
+	if (ok(max)) return max
 
 	let lo = min
+	if (floor !== undefined && floor > min && floor < max && ok(floor)) {
+		lo = floor
+	} else if (!ok(min)) {
+		// Even the min overflows: return min (can't do better).
+		return min
+	}
+
 	let hi = max
 	while (hi - lo > precision) {
 		const mid = (lo + hi) / 2
-		probe.style.fontSize = `${mid}px`
-		if (fits(probe, mode, innerWidth, innerHeight)) lo = mid
+		if (ok(mid)) lo = mid
 		else hi = mid
 	}
 	return lo

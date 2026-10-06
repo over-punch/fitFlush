@@ -10,8 +10,8 @@ import {
 	type ReactNode,
 	type Ref,
 } from 'react'
-import { useFitFlush } from './useFitFlush'
-import type { FitFlushOptions } from '../core/types'
+import { useFitFlush } from './useFitFlush.js'
+import type { FitFlushOptions } from '../core/types.js'
 
 /** Props for <FitFlushText>. Spreads FitFlushOptions plus HTML/ARIA attributes. */
 export interface FitFlushTextProps
