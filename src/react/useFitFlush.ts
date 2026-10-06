@@ -1,8 +1,8 @@
 // React hook wrapping fitFlush with ResizeObserver + fonts.ready auto-refit.
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { fitFlush } from '../core/adjust'
-import type { FitFlushOptions } from '../core/types'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { fitFlushLive } from '../core/adjust.js'
+import type { FitFlushOptions } from '../core/types.js'
 
 /** useLayoutEffect warns in SSR; fall back to useEffect when window is missing. */
 const useIsomorphicLayoutEffect =
@@ -10,14 +10,27 @@ const useIsomorphicLayoutEffect =
 
 /**
  * React hook that fits text inside the ref'd element to its parent container.
- * Re-runs on container resize (width + height), after web fonts load, and
- * whenever options change. Returns { ref, size } — size is the last computed
+ * Re-runs on container resize (width + height), when the text changes, after web fonts load,
+ * and whenever options change; follows the element if React replaces it. Returns { ref, size } — size is the last computed
  * font-size in px (0 before first measurement).
  */
 export function useFitFlush<T extends HTMLElement = HTMLElement>(
 	options: FitFlushOptions = {},
 ): { ref: React.RefObject<T | null>; size: number } {
-	const ref = useRef<T>(null)
+	// A ref that re-renders when React attaches a different element (a conditional remount, a
+	// changed `as`), so the live fit moves to the new element instead of the detached old one.
+	const [node, setNode] = useState<T | null>(null)
+	const ref = useMemo(() => {
+		let current: T | null = null
+		return {
+			get current() { return current },
+			set current(el: T | null) {
+				if (el === current) return
+				current = el
+				setNode(el)
+			},
+		} as React.RefObject<T | null>
+	}, [])
 	const optionsRef = useRef(options)
 	optionsRef.current = options
 	const [size, setSize] = useState(0)
@@ -34,45 +47,21 @@ export function useFitFlush<T extends HTMLElement = HTMLElement>(
 	const container = options.container ?? null
 
 	useIsomorphicLayoutEffect(() => {
-		const el = ref.current
+		const el = node
 		if (!el) return
 
-		let lastWidth = 0
-		let lastHeight = 0
-		let rafId = 0
-		let cancelled = false
+		// The live handle refits on container resize, text changes (children) and font loads,
+		// and restores the element's styles when disposed.
+		const handle = fitFlushLive(el, {
+			...optionsRef.current,
+			onFit: (s) => {
+				setSize(s)
+				optionsRef.current.onFit?.(s)
+			},
+		})
 
-		const run = () => {
-			if (cancelled) return
-			const s = fitFlush(el, optionsRef.current)
-			setSize(s)
-		}
-
-		run()
-
-		const resolvedContainer = optionsRef.current.container ?? el.parentElement
-		let ro: ResizeObserver | null = null
-		if (resolvedContainer && typeof ResizeObserver !== 'undefined') {
-			ro = new ResizeObserver((entries) => {
-				const w = Math.round(entries[0].contentRect.width)
-				const h = Math.round(entries[0].contentRect.height)
-				if (w === lastWidth && h === lastHeight) return
-				lastWidth = w
-				lastHeight = h
-				cancelAnimationFrame(rafId)
-				rafId = requestAnimationFrame(run)
-			})
-			ro.observe(resolvedContainer)
-		}
-
-		document.fonts?.ready?.then(() => { if (!cancelled) run() }).catch(() => {})
-
-		return () => {
-			cancelled = true
-			ro?.disconnect()
-			cancelAnimationFrame(rafId)
-		}
-	}, [mode, min, max, precision, padX, padY, vfKey, container])
+		return () => handle.dispose()
+	}, [node, mode, min, max, precision, padX, padY, vfKey, container])
 
 	return { ref, size }
 }
