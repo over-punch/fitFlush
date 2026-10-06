@@ -97,7 +97,7 @@ const handle = fitFlushLive(target, { mode: "both", max: 240 })
 // handle.dispose()
 ```
 
-`fitFlushLive` attaches a `ResizeObserver` to the container and re-fits after `document.fonts.ready`. Call `handle.refit()` to re-run manually after changing the text, and `handle.dispose()` to stop observing and restore the original `fontSize`.
+`fitFlushLive` attaches a `ResizeObserver` to the container, re-fits when the target's text changes, and re-fits as web fonts load. Call `handle.refit()` to re-run manually, and `handle.dispose()` to stop observing and restore the target's original inline styles. A second `fitFlushLive` on the same element replaces the first. To undo a one-shot `fitFlush`, call `removeFitFlush(target)`.
 
 ### Variable-font worst-case safety
 
@@ -112,6 +112,8 @@ fitFlush(target, {
 	},
 })
 ```
+
+The max isn't always the widest end. An optical-size axis is widest at its *minimum*: give `min` too (`opsz: { min: 8, max: 144 }`) and the size must fit at all the maxes and at all the given mins. Axis keys must be four-character tags (`wght`, not `weight`); an invalid entry is ignored with a console warning rather than invalidating every axis.
 
 Both lines below were fitted with `wght` held at `900`. The heavy text fills its box exactly; the same size at `wght 300` leaves headroom — so animating weight up to 900 later never overflows.
 
@@ -137,7 +139,7 @@ const size: number = fitFlush(document.querySelector<HTMLElement>("h1")!, option
 | `max` | `number` | `400` | Maximum font-size in px. |
 | `precision` | `number` | `0.5` | Binary-search convergence precision in px. |
 | `padding` | `number \| { x?, y? }` | `0` | Inset from container edges in px. A single number insets both axes. |
-| `vfSettings` | `Record<string, { max: number }>` | — | Variable-font axis ranges. When present, measurement runs at every axis' `max` for worst-case safety. |
+| `vfSettings` | `Record<string, { max: number; min?: number }>` | — | Variable-font axis ranges. When present, measurement runs at every axis' `max` (and, where given, every `min`) for worst-case safety. |
 | `container` | `HTMLElement` | `target.parentElement` | Override the container used for measurement. |
 | `onFit` | `(size: number) => void` | — | Callback fired after each fit calculation, receiving the resolved font-size in px. |
 
@@ -145,22 +147,26 @@ const size: number = fitFlush(document.querySelector<HTMLElement>("h1")!, option
 
 ## How it works
 
-1. **Snapshot container** — reads container dimensions in a single batch, subtracts `padding`.
-2. **Clone probe** — creates a `position: fixed; left: -99999px; visibility: hidden` measurement span, style-copied from the target via `getComputedStyle`. The probe is `aria-hidden` and appended to `document.body` — never injected into the target's subtree, so there is zero visible layout disruption during measurement.
-3. **Apply max VF axis** — if `vfSettings` is present, the probe's `font-variation-settings` is set to the maximum of every axis before the search begins.
+1. **Snapshot container** — reads the container's content box (padding and border excluded, in layout px, so a transformed or zoomed parent works) and subtracts the `padding` option.
+2. **Clone probe** — places a hidden, `aria-hidden` clone of the target right after it, absolutely positioned so it takes no space. The clone renders exactly as the target does: nested markup and `<br>`, letter- and word-spacing in their own units, `font-size-adjust`, small caps, hyphenation and `overflow-wrap`, and the target's own padding and `text-indent`.
+3. **Apply VF axes** — if `vfSettings` is present, the clone is measured with every listed axis at its max (and at its min, where given).
 4. **Search for size**
-   - `mode: 'width'` uses an **analytical fast path**: measure at 100 px, linearly predict the target size, verify in one write. Typically one or two measurements.
-   - `mode: 'height'` and `'both'` use **binary search**: ~10 iterations to converge over `[8, 400]` at `0.5 px` precision.
-5. **Write** — sets `target.style.fontSize` to the computed size and removes the probe.
+   - `mode: 'width'` uses an **analytical fast path**: measure at 100 px, predict the size linearly, then verify and correct (width isn't exactly linear in size: hinting, and optical-size axes that follow the size). Usually 3–12 measurements.
+   - `mode: 'height'` and `'both'` use **binary search**: ~10 iterations to converge over `[8, 400]` at `0.5 px` precision. `'both'` also rejects any size where something overflows sideways (a long word, a `nowrap` line).
+5. **Write** — sets `target.style.fontSize` to the computed size, rounded *down* to 0.1 px so it never exceeds the fit, and removes the clone. Width mode also sets `white-space: nowrap`; the other modes leave your `white-space` alone. A console warning says when the text doesn't fit even at `min`.
 6. **Restore scroll** — saves `window.scrollY` before mutation and restores via `requestAnimationFrame` (iOS Safari does not honour `overflow-anchor: none`, so height mutations can trigger scroll jumps).
 
 ### Line break safety
 
-For `mode: 'height'` and `'both'`, the probe is measured with the same inner width and `white-space: normal` as the target. Line breaks are whatever the browser produces at the fitted size — the tool never rewrites word breaks or injects spans into your live DOM.
+For `mode: 'height'` and `'both'`, the probe is measured at the container's inner width with the target's own `white-space`. Line breaks are whatever the browser produces at the fitted size — the tool never rewrites word breaks or injects spans into your live DOM.
 
 ### SSR
 
-`fitFlush` and `fitFlushLive` are SSR-safe. On the server, `fitFlush` returns `0` and `fitFlushLive` returns a no-op handle.
+`fitFlush` and `fitFlushLive` are SSR-safe. On the server, `fitFlush` returns `0` and `fitFlushLive` returns a no-op handle. The ESM build loads natively in Node and browsers (no bundler needed).
+
+### Idempotence
+
+Repeated calls give the same size. In `'both'` or `'height'` mode inside a container whose height follows its content, the current size is kept as a floor, so the text doesn't shrink a step on every call; such a container gives no room to grow either, so give it a height if you want the text to fill it.
 
 ### `prefers-reduced-motion`
 
@@ -176,7 +182,6 @@ Browser APIs: `ResizeObserver`, `document.fonts.ready`, and `getBoundingClientRe
 
 - Animated transitions between target sizes on resize (gated by `prefers-reduced-motion`)
 - `shared` option — fit a group of elements to a common size for headline grids
-- Rich inline HTML preservation in the probe (currently text-only)
 - Measurement caching — skip re-measurement when text, container size, and options are unchanged
 
 ---
