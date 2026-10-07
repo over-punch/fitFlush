@@ -53,6 +53,16 @@ export function createProbe(target: HTMLElement): HTMLElement {
 	return probe
 }
 
+/**
+ * The white-space a width-mode fit uses for an element whose author white-space is `author`:
+ * 'pre' when the author's value preserves line breaks (pre, pre-wrap, break-spaces), so the text
+ * keeps its own lines and no others; otherwise 'nowrap'. The probe is measured with this value
+ * and the target is written with it — they must match, or the fitted size is for a different layout.
+ */
+export function widthModeWhiteSpace(author: string): 'pre' | 'nowrap' {
+	return author === 'pre' || author === 'pre-wrap' || author === 'break-spaces' ? 'pre' : 'nowrap'
+}
+
 /** Configure the probe for a given fit mode and container inner width (layout px). */
 export function configureProbe(
 	probe: HTMLElement,
@@ -63,7 +73,7 @@ export function configureProbe(
 	if (mode === 'width') {
 		// One line at its natural width. Preserved whitespace (pre) keeps its own line breaks.
 		probe.style.display = 'inline-block'
-		probe.style.whiteSpace = authorWhiteSpace === 'pre' || authorWhiteSpace === 'pre-wrap' || authorWhiteSpace === 'break-spaces' ? 'pre' : 'nowrap'
+		probe.style.whiteSpace = widthModeWhiteSpace(authorWhiteSpace)
 		probe.style.width = 'max-content'
 	} else {
 		// Block at the container's width: text wraps exactly as the real element would

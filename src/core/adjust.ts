@@ -8,6 +8,7 @@ import {
 	createProbe,
 	fits,
 	layoutScale,
+	widthModeWhiteSpace,
 } from './measure.js'
 import { mergeAxisString, validateVfSettings } from './vf.js'
 import { DEFAULTS, type FitFlushHandle, type FitFlushOptions } from './types.js'
@@ -172,11 +173,12 @@ export function fitFlush(target: HTMLElement, options: FitFlushOptions = {}): nu
 	// Round down to one decimal: rounding up could push a fitted size past the container.
 	const rounded = Math.max(min, Math.floor(size * 10) / 10)
 
-	// Write — target gets the computed size. Width mode keeps the text on one line; the other
-	// modes leave the author's white-space alone.
+	// Write — target gets the computed size. Width mode stops the text wrapping, with the same
+	// white-space the probe was measured with: one line, or the author's own line breaks when
+	// their white-space preserves them. The other modes leave the author's white-space alone.
 	target.style.fontSize = `${rounded}px`
 	target.style.setProperty('--ff-size', `${rounded}px`)
-	if (mode === 'width') target.style.whiteSpace = 'nowrap'
+	if (mode === 'width') target.style.whiteSpace = widthModeWhiteSpace(authorWhiteSpace)
 
 	// Restore scroll after DOM mutations settle.
 	if (typeof requestAnimationFrame !== 'undefined') {

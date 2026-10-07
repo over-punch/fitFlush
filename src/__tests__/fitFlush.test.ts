@@ -182,6 +182,19 @@ describe('fitFlush — whiteSpace management', () => {
 		expect(target.style.whiteSpace).toBe('nowrap')
 	})
 
+	it("keeps preserved line breaks in width mode: writes 'pre', the white-space the probe was measured with", () => {
+		// The probe of a white-space: pre target is measured as 'pre' (its own line breaks kept), so
+		// the size fits the widest LINE. Writing 'nowrap' afterwards put every line on one row at
+		// that size, and the text overflowed.
+		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
+		for (const ws of ['pre', 'pre-wrap', 'break-spaces']) {
+			const { target } = setupDOM('Fit\nFlush Headline')
+			target.style.whiteSpace = ws
+			fitFlush(target, { mode: 'width' })
+			expect(target.style.whiteSpace).toBe('pre')
+		}
+	})
+
 	it('clears the nowrap a width fit wrote when refitting in height mode', () => {
 		mockMeasurement({ containerWidth: 500, containerHeight: 200 })
 		const { target } = setupDOM('Hello world')
@@ -223,7 +236,7 @@ describe('fitFlushLive — whiteSpace restore', () => {
 		const { target } = setupDOM('hi')
 		target.style.whiteSpace = 'pre-wrap'
 		const handle = fitFlushLive(target, { mode: 'width' })
-		expect(target.style.whiteSpace).toBe('nowrap')
+		expect(target.style.whiteSpace).toBe('pre')
 		handle.dispose()
 		expect(target.style.whiteSpace).toBe('pre-wrap')
 	})
