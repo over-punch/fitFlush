@@ -4,6 +4,11 @@
 Initial bootstrap of fit-flush as a new submodule under type-tools. v0.0.1.
 
 ## Recent changes
+- 2026-10-06: Launch kit (README Studio pass, site polish, demo recording). Not released: commits are on origin only.
+  - Fix: width mode wrote `white-space: nowrap` on a target whose author white-space preserves line breaks (pre, pre-wrap, break-spaces), although the probe was measured as `pre`; the lines were joined at a size fitted for the widest line and overflowed. Now `widthModeWhiteSpace()` in `measure.ts` is used for both. Regression test in `fitFlush.test.ts`.
+  - README: resize GIF hero, measured vfSettings table, Webflow/Framer/script-tag section, Cost and limits, SSR note, `container` React example. Numbers come from `npm run capture` (site/scripts/capture.html `measure()`).
+  - Site: new variable-font safety demo (`VfSafetyDemo` in Demo.tsx), copy drift fixed, phone-width panel overflow fixed.
+  - Known and documented, not fixed: margins on the target aren't counted in height fits; in a content-height container with siblings, 'both'/'height' grows on every refit until the width stops it.
 - 2026-04-10: Created `over-punch/fitFlush` GitHub repo (auto-README)
 - 2026-04-10: Added as submodule at `type-tools/fitFlush`
 - 2026-04-10: Scaffolded full repo — src (core + react), tests, configs, site stub, agent memory, README, PROCESS.md

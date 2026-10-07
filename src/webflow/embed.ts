@@ -115,8 +115,8 @@ function initElement(el: HTMLElement): void {
 
 /**
  * Re-fit a single element now, or every tracked element when no element is given.
- * Useful after changing an element's text content, since the live handle only
- * observes container size — not the text it holds.
+ * Rarely needed: the live handle already refits on container resize, text changes and font
+ * loads. Use it after a change it can't see, such as a new font-family or variable-font axis.
  *
  * @param el - Element to re-fit; omit to re-fit all tracked elements
  */
