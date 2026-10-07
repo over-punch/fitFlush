@@ -1,13 +1,27 @@
 "use client"
 
-// fitFlush demo — interactive text fitting with per-axis fill and container controls
-import { useState, useEffect, useRef, useDeferredValue, useCallback, useMemo } from "react"
+// fitFlush demos — interactive text fitting with per-axis fill and container controls (default
+// export), and the variable-font safety comparison: weight animated after a fit, without and with vfSettings.
+import { useState, useEffect, useLayoutEffect, useRef, useDeferredValue, useCallback, useMemo } from "react"
 import { useFitFlush } from "@overpunch/fit-flush/react"
 import type { FitFlushOptions } from "@overpunch/fit-flush"
 
 const DEFAULT_TEXT_SINGLE = "Binary Search"
 const DEFAULT_TEXT_MULTI = "The quick brown fox jumps over the lazy dog while the five boxing wizards jump quickly at dawn."
 const DEMO_FONT = "var(--font-sans)"
+
+/** Lightest weight the variable-font demo animates from (Inter's wght axis runs 100–900). */
+const WGHT_REST = 300
+/** Heaviest weight the variable-font demo animates to, and the `max` passed in vfSettings. */
+const WGHT_MAX = 900
+/** Duration of one 300 → 900 → 300 weight cycle, in ms. */
+const WGHT_CYCLE_MS = 3600
+/** Text fitted in the variable-font demo. */
+const VF_TEXT = "Variable Headline"
+/** Colour marking an overflow in the variable-font demo. */
+const OVERFLOW_COLOR = "oklch(0.52 0.2 28)"
+/** vfSettings for the safe box: measure at the heaviest weight the animation reaches. */
+const VF_SAFE = { wght: { max: WGHT_MAX } }
 
 /**
  * Inner component that uses the hook — re-mounts when mode or fill changes
@@ -83,6 +97,150 @@ function Slider({
 				title={title}
 				style={{ touchAction: "pan-y" }}
 			/>
+		</div>
+	)
+}
+
+/**
+ * One box of the variable-font comparison: a single line fitted to the box width with
+ * `useFitFlush`, rendered at the current weight. Reports the weight the text had when it was
+ * last fitted and how far it now overflows the box.
+ */
+function VfBox({
+	title,
+	code,
+	wght,
+	vfSettings,
+}: {
+	title: string
+	code: string
+	wght: number
+	vfSettings?: FitFlushOptions["vfSettings"]
+}) {
+	const boxRef = useRef<HTMLDivElement>(null)
+	// The weight at the moment of the last fit — a fit without vfSettings measures at this weight.
+	const wghtRef = useRef(wght)
+	wghtRef.current = wght
+	const [fittedAt, setFittedAt] = useState<number | null>(null)
+	const [over, setOver] = useState(0)
+	const options: FitFlushOptions = useMemo(() => ({
+		mode: "width",
+		vfSettings,
+		onFit: () => setFittedAt(Math.round(wghtRef.current)),
+	}), [vfSettings])
+	const { ref, size } = useFitFlush<HTMLParagraphElement>(options)
+
+	// Overflow in layout px: rendered text width minus the box's inner width, after every weight
+	// change or refit. Rects are visual (they include any CSS zoom or transform on an ancestor) and
+	// clientWidth is layout, so the text's rect is divided by the box's visual/layout ratio first.
+	useLayoutEffect(() => {
+		const el = ref.current
+		const box = boxRef.current
+		if (!el || !box || box.offsetWidth === 0) return
+		const range = document.createRange()
+		range.selectNodeContents(el)
+		const scale = box.getBoundingClientRect().width / box.offsetWidth || 1
+		setOver(range.getBoundingClientRect().width / scale - box.clientWidth)
+	}, [ref, wght, size])
+
+	const overflowing = over > 0.5
+	return (
+		<div className="flex flex-col gap-2 min-w-0">
+			<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs">
+				<span className="uppercase tracking-[0.18em] font-medium text-muted">{title}</span>
+				<code className="font-mono text-muted">{code}</code>
+			</div>
+			{/* The box is narrower than the panel so an overflow shows past its edge instead of being clipped. */}
+			<div
+				ref={boxRef}
+				className="rounded border"
+				style={{
+					width: "86%",
+					borderColor: overflowing ? OVERFLOW_COLOR : "color-mix(in oklch, var(--foreground) 20%, transparent)",
+					background: "color-mix(in oklch, var(--foreground) 4%, transparent)",
+				}}
+			>
+				<p
+					ref={ref}
+					style={{
+						fontFamily: DEMO_FONT,
+						fontVariationSettings: `"wght" ${wght}`,
+						lineHeight: 1.2,
+						margin: 0,
+						whiteSpace: "nowrap",
+					}}
+				>
+					{VF_TEXT}
+				</p>
+			</div>
+			<p className="text-xs tabular-nums" aria-live="off" style={{ color: overflowing ? OVERFLOW_COLOR : undefined }}>
+				{size > 0 ? `${size}px` : "—"}
+				{vfSettings ? ` · measured at wght ${WGHT_MAX}` : fittedAt !== null ? ` · measured at wght ${fittedAt}` : ""}
+				{" · "}
+				<strong className="font-semibold">{overflowing ? `${Math.round(over)} px too wide` : "fits"}</strong>
+			</p>
+		</div>
+	)
+}
+
+/**
+ * Variable-font safety demo: the same line fitted twice, without and with `vfSettings`, while a
+ * slider or a looping animation drives the `wght` axis from 300 to 900 after the fit.
+ */
+export function VfSafetyDemo() {
+	const [wght, setWght] = useState(WGHT_REST)
+	const [animating, setAnimating] = useState(false)
+
+	// Triangle wave 300 → 900 → 300, started from the rest weight each time it is switched on.
+	useEffect(() => {
+		if (!animating) return
+		let raf = 0
+		const start = performance.now()
+		const tick = (now: number) => {
+			const phase = ((now - start) % WGHT_CYCLE_MS) / WGHT_CYCLE_MS
+			const up = phase < 0.5 ? phase * 2 : (1 - phase) * 2
+			setWght(Math.round(WGHT_REST + (WGHT_MAX - WGHT_REST) * up))
+			raf = requestAnimationFrame(tick)
+		}
+		raf = requestAnimationFrame(tick)
+		return () => cancelAnimationFrame(raf)
+	}, [animating])
+
+	return (
+		<div className="flex flex-col gap-8">
+			<div className="flex flex-col gap-6">
+				<VfBox title="Without vfSettings" code={`{ mode: 'width' }`} wght={wght} />
+				<VfBox title="With vfSettings" code={`{ mode: 'width', vfSettings: { wght: { max: ${WGHT_MAX} } } }`} wght={wght} vfSettings={VF_SAFE} />
+			</div>
+
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs items-end">
+				<Slider
+					label="Weight" value={wght} min={WGHT_REST} max={WGHT_MAX} step={10}
+					suffix="" ariaLabel="Font weight (wght axis) applied after the fit"
+					inputId="slider-wght"
+					title="Drag the weight after the text was fitted — heavier letters are wider"
+					onChange={v => { setAnimating(false); setWght(v) }}
+				/>
+				<div>
+					<button
+						onClick={() => setAnimating(a => !a)}
+						aria-pressed={animating}
+						title="Loop the weight from 300 to 900 and back"
+						className={`px-3 py-1.5 rounded-full border transition-colors ${
+							animating
+								? "border-foreground/60 bg-foreground/10"
+								: "border-foreground/20 hover:border-foreground/40"
+						}`}
+					>
+						{animating ? "Stop animation" : "Animate weight"}
+					</button>
+				</div>
+			</div>
+
+			<p className="text-xs text-muted italic" style={{ lineHeight: "1.8" }}>
+				Both lines were fitted once. The first was measured at the weight it had; the second at the
+				heaviest weight it will reach, so it is a little smaller at rest and never overflows.
+			</p>
 		</div>
 	)
 }
