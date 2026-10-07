@@ -1,6 +1,7 @@
 <!doctype html>
-<!-- README visual capture page for fit-flush. Loads the built library from ../../dist
-     and renders three labelled scenes that scripts/capture.mjs screenshots to assets/. -->
+<!-- README visual capture page for fit-flush. Loads the built library from ../../dist,
+     renders the scenes that scripts/capture.mjs screenshots to assets/, and runs the
+     measurements quoted in the README (exposed as window.__measurements). -->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -9,6 +10,12 @@
 		font-family: "Merriweather VF";
 		src: url("/site/public/fonts/merriweather-variable.woff2") format("woff2");
 		font-weight: 300 900;
+		font-display: block;
+	}
+	@font-face {
+		font-family: "Inter VF";
+		src: url("/site/public/fonts/inter-variable.woff2") format("woff2");
+		font-weight: 100 900;
 		font-display: block;
 	}
 	:root {
@@ -24,7 +31,7 @@
 	* { box-sizing: border-box; }
 	html, body { margin: 0; background: transparent; }
 	body {
-		font-family: "Inter", system-ui, sans-serif;
+		font-family: "Inter VF", system-ui, sans-serif;
 		color: var(--fg);
 		-webkit-font-smoothing: antialiased;
 	}
@@ -51,6 +58,7 @@
 		color: var(--fg);
 		white-space: nowrap;
 	}
+	code { color: var(--accent); font-family: ui-monospace, monospace; }
 
 	/* ---- Scene 1: hero ---- */
 	#hero { width: 920px; }
@@ -64,7 +72,6 @@
 		background: var(--card);
 	}
 	#hero .cap { margin-top: 16px; color: var(--muted); font-size: 14px; }
-	#hero code { color: var(--accent); font-family: ui-monospace, monospace; }
 
 	/* ---- Scene 2: before / after ---- */
 	#beforeafter { width: 1040px; }
@@ -101,15 +108,37 @@
 		white-space: nowrap;
 		color: var(--fg);
 	}
-	/* The naive frame clips its own overflow so the grid stays intact. */
-	.panel.bad .frame { overflow: hidden; }
 
-	/* ---- Scene 3: variable-font safety ---- */
-	#vfsafety { width: 920px; }
+	/* ---- Scene 3: variable-font safety (2 × 2: fitted without / with vfSettings, at rest / animated) ---- */
+	#vfsafety { width: 1040px; }
 	.vf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+	.vf-grid .frame { height: 104px; margin-top: 10px; }
+	.vf-grid .frame:first-of-type { margin-top: 0; }
+	.vf-row { display: flex; justify-content: space-between; margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+	.vf-row b { font-weight: 600; color: var(--fg); }
+	.panel.bad .vf-row b.over { color: var(--danger); }
+	.panel.good .vf-row b.ok { color: var(--accent); }
+	.vf-grid .frame.neutral { box-shadow: inset 0 0 0 1px var(--border); }
 	.vf-note { margin: 16px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
-	.vf-note b { color: var(--fg); font-weight: 600; }
-	.vf-note code { color: var(--accent); font-family: ui-monospace, monospace; }
+
+	/* ---- Scene 4: resize animation (frames stepped by capture.mjs) ---- */
+	#resize { width: 920px; }
+	#resize .stage { height: 190px; display: flex; align-items: stretch; }
+	#resize .box {
+		width: 860px;
+		border: 1px dashed var(--border);
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		padding: 0 22px;
+		background: var(--card);
+	}
+	#resize .cap { margin: 16px 0 0; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+	#resize .cap b { color: var(--fg); font-weight: 600; }
+
+	/* ---- Measurement sandbox (never screenshotted) ---- */
+	#bench { position: absolute; left: 0; top: 4000px; width: 1400px; }
+	#bench .c { background: #222; }
 </style>
 </head>
 <body>
@@ -120,7 +149,7 @@
 	<div class="box">
 		<p class="fit-target" id="heroText">Display&nbsp;Headlines</p>
 	</div>
-	<p class="cap">Largest <code>font-size</code> that fits the dashed box — found by binary search, written once.</p>
+	<p class="cap">The largest <code>font-size</code> that fits the dashed box — measured off-screen, written once.</p>
 </section>
 
 <!-- Scene 2 — before/after: a fixed font-size that overflows vs fit-flush -->
@@ -128,7 +157,7 @@
 	<p class="tag">fixed font-size vs fit-flush</p>
 	<div class="ba-grid">
 		<div class="panel bad">
-			<h3>Fixed 88px</h3>
+			<h3>Fixed 96px</h3>
 			<p class="sub">Overflows when the container is narrow.</p>
 			<div class="frame"><p id="naive">Breaking&nbsp;News</p></div>
 		</div>
@@ -140,44 +169,253 @@
 	</div>
 </section>
 
-<!-- Scene 3 — variable-font worst-case safety -->
+<!-- Scene 3 — variable-font safety: the same headline fitted without and with vfSettings -->
 <section class="scene" id="vfsafety">
-	<p class="tag">variable-font axis safety</p>
+	<p class="tag">animating weight after the fit</p>
 	<div class="vf-grid">
-		<div class="panel">
-			<h3 style="color:var(--accent)">Measured at wght 900</h3>
-			<p class="sub">Fitted with the axis held at its max.</p>
-			<div class="frame" style="height:120px"><p class="fit-target" id="vfHeavy" style="font-variation-settings:'wght' 900">Weight&nbsp;900</p></div>
+		<div class="panel bad">
+			<h3>Without vfSettings</h3>
+			<p class="sub">Fitted at the weight it had: <code>wght 300</code>.</p>
+			<div class="frame neutral"><p class="fit-target" id="vfA300" style="font-variation-settings:'wght' 300">Fit&nbsp;Flush</p></div>
+			<p class="vf-row"><span>at rest, wght 300</span><b id="vfA300n"></b></p>
+			<div class="frame"><p class="fit-target" id="vfA900" style="font-variation-settings:'wght' 900">Fit&nbsp;Flush</p></div>
+			<p class="vf-row"><span>animated to wght 900</span><b class="over" id="vfA900n"></b></p>
 		</div>
-		<div class="panel">
-			<h3>Rendered at wght 300</h3>
-			<p class="sub">Same size — comfortable headroom remains.</p>
-			<div class="frame" style="height:120px"><p class="fit-target" id="vfLight" style="font-variation-settings:'wght' 300">Weight&nbsp;300</p></div>
+		<div class="panel good">
+			<h3>With vfSettings: { wght: { max: 900 } }</h3>
+			<p class="sub">Measured at the heaviest weight it will reach.</p>
+			<div class="frame neutral"><p class="fit-target" id="vfB300" style="font-variation-settings:'wght' 300">Fit&nbsp;Flush</p></div>
+			<p class="vf-row"><span>at rest, wght 300</span><b id="vfB300n"></b></p>
+			<div class="frame"><p class="fit-target" id="vfB900" style="font-variation-settings:'wght' 900">Fit&nbsp;Flush</p></div>
+			<p class="vf-row"><span>animated to wght 900</span><b class="ok" id="vfB900n"></b></p>
 		</div>
 	</div>
-	<p class="vf-note">Pass <code>vfSettings: { wght: { max: 900 } }</code> and fit-flush measures at the heaviest axis. Animate <b>wght</b> anywhere from 300 → 900 afterwards and the text still fits — no reflow surprise.</p>
+	<p class="vf-note">Heavier glyphs are wider. A size found at the light weight overflows once the axis animates; measuring at the heaviest weight gives a slightly smaller size that still fits when it gets there.</p>
 </section>
+
+<!-- Scene 4 — resize: capture.mjs steps window.__resizeFrame(i) and assembles assets/resize.gif -->
+<section class="scene" id="resize">
+	<p class="tag">the container changes — the size follows</p>
+	<div class="stage">
+		<div class="box" id="resizeBox">
+			<p class="fit-target" id="resizeText">Display&nbsp;Headlines</p>
+		</div>
+	</div>
+	<p class="cap">container <b id="resizeW"></b> → <code>font-size</code> <b id="resizeS"></b></p>
+</section>
+
+<!-- Measurement sandbox -->
+<div id="bench"></div>
 
 <script type="module">
 	// Import the built library exactly as a consumer would (root export).
-	import { fitFlush } from "/dist/core/adjust.js"
+	import { fitFlush, removeFitFlush } from "/dist/index.js"
+
+	/** Rendered width of an element's text (the element is a block, so measure its contents). */
+	function textWidth(el) {
+		const r = document.createRange()
+		r.selectNodeContents(el)
+		return r.getBoundingClientRect().width
+	}
+
+	/** Content-box width of a frame (what fit-flush fits to). */
+	function innerWidth(frame) {
+		const cs = getComputedStyle(frame)
+		return frame.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
+	}
+
+	/** Writes "fits, N px spare" or "N px too wide" under a vf-safety frame. */
+	function note(id, el) {
+		const spare = innerWidth(el.parentElement) - textWidth(el)
+		document.getElementById(id).textContent = spare >= 0 ? `fits · ${spare.toFixed(0)} px spare` : `${(-spare).toFixed(0)} px too wide`
+	}
+
+	/** Number of probe measurements (forced layouts) fit-flush made during `fn`. */
+	function countMeasurements(fn) {
+		const orig = Element.prototype.getBoundingClientRect
+		let n = 0
+		Element.prototype.getBoundingClientRect = function () {
+			if (this.hasAttribute && this.hasAttribute("data-ff-probe")) n++
+			return orig.call(this)
+		}
+		try { fn() } finally { Element.prototype.getBoundingClientRect = orig }
+		return n
+	}
+
+	/** Builds a container + target in the sandbox and returns both. */
+	function bench(width, height, html, style = "", tag = "p", containerStyle = "") {
+		const c = document.createElement("div")
+		c.className = "c"
+		c.style.cssText = `width:${width}px;${height ? `height:${height}px;` : ""}${containerStyle}`
+		const t = document.createElement(tag)
+		if (tag === "p") t.style.margin = "0"
+		t.style.cssText += `;line-height:1.1;${style}`
+		t.innerHTML = html
+		c.appendChild(t)
+		document.getElementById("bench").appendChild(c)
+		return { c, t }
+	}
+
+	const median = (a) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]
+	const range = (a) => (Math.min(...a) === Math.max(...a) ? `${a[0]}` : `${Math.min(...a)}–${Math.max(...a)}`)
+
+	/** Runs every measurement quoted in the README and returns them as plain data. */
+	function measure() {
+		const out = {}
+		const WIDTHS = [240, 320, 480, 640, 860, 1024, 1280]
+		const PARA = "The quick brown fox jumps over the lazy dog while the five boxing wizards jump quickly at dawn."
+
+		// 1. Weight animation after a fit, without and with vfSettings (one line, 860 px container).
+		out.weight = {}
+		for (const [name, family] of [["Merriweather", "Merriweather VF"], ["Inter", "Inter VF"]]) {
+			const base = `font-family:'${family}';white-space:nowrap;`
+			const a = bench(860, 0, "Display Headlines", base + "font-variation-settings:'wght' 300")
+			const sizeA = fitFlush(a.t, { mode: "width" })
+			a.t.style.fontVariationSettings = "'wght' 900"
+			const overA = textWidth(a.t) - 860
+			const b = bench(860, 0, "Display Headlines", base + "font-variation-settings:'wght' 300")
+			const sizeB = fitFlush(b.t, { mode: "width", vfSettings: { wght: { max: 900 } } })
+			const spare300 = 860 - textWidth(b.t)
+			b.t.style.fontVariationSettings = "'wght' 900"
+			const overB = textWidth(b.t) - 860
+			out.weight[name] = {
+				withoutVf: { size: sizeA, overflowAt900Px: +overA.toFixed(1), overflowPct: +((overA / 860) * 100).toFixed(1) },
+				withVf: { size: sizeB, overflowAt900Px: +Math.max(0, overB).toFixed(1), spareAt900Px: +(-overB).toFixed(2), spareAt300Px: +spare300.toFixed(1) },
+				sizeCostPct: +((1 - sizeB / sizeA) * 100).toFixed(1),
+			}
+		}
+
+		// 2. Probe measurements per fit, and time per fit, across container widths.
+		const cases = {
+			"width": { mode: "width" },
+			"width + vfSettings max": { mode: "width", vfSettings: { wght: { max: 900 } } },
+			"both": { mode: "both" },
+			"both + vfSettings max": { mode: "both", vfSettings: { wght: { max: 900 } } },
+			"both + vfSettings min and max": { mode: "both", vfSettings: { wght: { min: 300, max: 900 } } },
+			"height": { mode: "height" },
+		}
+		out.cost = {}
+		for (const [label, opts] of Object.entries(cases)) {
+			const counts = []
+			const times = []
+			for (const w of WIDTHS) {
+				const oneLine = opts.mode === "width"
+				const { c, t } = bench(w, oneLine ? 0 : 300, oneLine ? "Display Headlines" : PARA, "font-family:'Merriweather VF';")
+				counts.push(countMeasurements(() => fitFlush(t, opts)))
+				removeFitFlush(t)
+				for (let i = 0; i < 15; i++) {
+					const t0 = performance.now()
+					fitFlush(t, opts)
+					times.push(performance.now() - t0)
+					removeFitFlush(t)
+				}
+				c.remove()
+			}
+			out.cost[label] = { measurements: range(counts), medianMs: +median(times).toFixed(2), maxMs: +Math.max(...times).toFixed(2) }
+		}
+
+		// 3. How flush is "flush": spare width left by a width fit across container widths.
+		const gaps = WIDTHS.map((w) => {
+			const { t } = bench(w, 0, "Display Headlines", "font-family:'Merriweather VF';")
+			fitFlush(t, { mode: "width" })
+			return +(w - textWidth(t)).toFixed(2)
+		})
+		out.widthGapPx = { min: Math.min(...gaps), max: Math.max(...gaps), all: gaps }
+
+		// 4. Nested markup survives a fit untouched.
+		{
+			const html = "Fit <em>this</em> and <strong>that</strong><br>on two lines"
+			const { t } = bench(600, 240, html, "font-family:'Merriweather VF';")
+			const before = t.innerHTML
+			const size = fitFlush(t, { mode: "both" })
+			out.markup = { unchanged: t.innerHTML === before, size, fitsHeight: t.getBoundingClientRect().height <= 240, fitsWidth: t.scrollWidth <= 600 }
+		}
+
+		// 5. Preserved line breaks (white-space: pre) in width mode.
+		{
+			const { c, t } = bench(600, 0, "Fit\nFlush Headline", "font-family:'Merriweather VF';white-space:pre;")
+			const size = fitFlush(t, { mode: "width" })
+			out.pre = { size, whiteSpaceWritten: t.style.whiteSpace, lines: Math.round(t.getBoundingClientRect().height / (size * 1.1)), overflowPx: +Math.max(0, textWidth(t) - 600).toFixed(1) }
+		}
+
+		// 6. A target with its own margins (an <h1>'s default 0.67em) in a container with a border.
+		{
+			const plain = bench(900, 160, "Headline", "font-family:'Merriweather VF';", "h1")
+			const sizePlain = fitFlush(plain.t, { mode: "both" })
+			const bordered = bench(900, 160, "Headline", "font-family:'Merriweather VF';", "h1", "border:1px solid #555;box-sizing:content-box;")
+			const sizeB = fitFlush(bordered.t, { mode: "both" })
+			const over = (x) => +(x.t.getBoundingClientRect().bottom - (x.c.getBoundingClientRect().top + x.c.clientTop + x.c.clientHeight)).toFixed(1)
+			const zero = bench(900, 160, "Headline", "font-family:'Merriweather VF';margin:0;", "h1", "border:1px solid #555;box-sizing:content-box;")
+			const sizeZ = fitFlush(zero.t, { mode: "both" })
+			out.margins = {
+				marginsCollapseThroughPlainContainer: { size: sizePlain, textPastBottomPx: over(plain) },
+				borderedContainer: { size: sizeB, textPastBottomPx: over(bordered) },
+				borderedContainerMarginZero: { size: sizeZ, textPastBottomPx: over(zero) },
+			}
+		}
+
+		// 7. A container whose height follows its content gives 'both' no room to grow.
+		{
+			const { c, t } = bench(600, 0, "Headline", "font-family:'Merriweather VF';font-size:24px;")
+			const size = fitFlush(t, { mode: "both" })
+			out.autoHeight = { startSize: 24, fittedSize: size }
+		}
+
+		// 8. The same, with a sibling in the container: the container's height includes the sibling,
+		// so every refit finds room that the text itself then takes up.
+		{
+			const { c, t } = bench(600, 0, "Headline", "font-family:'Merriweather VF';font-size:24px;")
+			const sib = document.createElement("p")
+			sib.textContent = "A subtitle under the headline."
+			sib.style.cssText = "margin:0;font-size:16px;line-height:1.5"
+			c.appendChild(sib)
+			const sizes = []
+			for (let i = 0; i < 8; i++) sizes.push(fitFlush(t, { mode: "both" }))
+			out.autoHeightWithSibling = { startSize: 24, sizesOverEightCalls: sizes }
+		}
+
+		// 9. The numbers printed inside the vfsafety image.
+		out.vfImage = Object.fromEntries(["vfA300n", "vfA900n", "vfB300n", "vfB900n"].map((id) => [id, document.getElementById(id).textContent]))
+		return out
+	}
+
+	/** Fits the resize scene at frame `i` of `total` (container eases 860 → 400 → 860 px). */
+	window.__resizeFrame = (i, total) => {
+		const phase = (1 - Math.cos((2 * Math.PI * i) / total)) / 2
+		const w = Math.round(860 - 460 * phase)
+		const box = document.getElementById("resizeBox")
+		box.style.width = `${w}px`
+		const size = fitFlush(document.getElementById("resizeText"), { mode: "width", max: 220 })
+		document.getElementById("resizeW").textContent = `${w} px`
+		document.getElementById("resizeS").textContent = `${size.toFixed(1)} px`
+	}
 
 	async function run() {
 		await document.fonts.ready
+		await Promise.all([document.fonts.load("300 40px 'Merriweather VF'"), document.fonts.load("900 40px 'Inter VF'")])
 		// settle one frame so layout boxes are final
 		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
 		// Scene 1 — hero
 		fitFlush(document.getElementById("heroText"), { mode: "width", max: 220 })
 
-		// Scene 2 — fit-flush panel (the naive one keeps its fixed 88px and overflows)
+		// Scene 2 — fit-flush panel (the naive one keeps its fixed 96px and overflows)
 		fitFlush(document.getElementById("fitText"), { mode: "width", max: 200 })
 
-		// Scene 3 — both fitted with the heavy axis as the worst case, same final size
-		const opts = { mode: "width", max: 160, vfSettings: { wght: { max: 900 } } }
-		fitFlush(document.getElementById("vfHeavy"), opts)
-		fitFlush(document.getElementById("vfLight"), opts)
+		// Scene 3 — left: fitted at wght 300 with no vfSettings, the same size then shown at 900.
+		// Right: fitted with vfSettings, shown at 300 and 900.
+		const $ = (id) => document.getElementById(id)
+		const sizeA = fitFlush($("vfA300"), { mode: "width", max: 200 })
+		$("vfA900").style.fontSize = `${sizeA}px`
+		const vf = { mode: "width", max: 200, vfSettings: { wght: { max: 900 } } }
+		fitFlush($("vfB300"), vf)
+		fitFlush($("vfB900"), vf)
+		for (const id of ["vfA300", "vfA900", "vfB300", "vfB900"]) note(`${id}n`, $(id))
 
+		// Scene 4 — first frame
+		window.__resizeFrame(0, 1)
+
+		window.__measurements = measure()
 		window.__ready = true
 	}
 	run()
