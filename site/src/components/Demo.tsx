@@ -120,7 +120,9 @@ function VfBox({
 	const boxRef = useRef<HTMLDivElement>(null)
 	// The weight at the moment of the last fit — a fit without vfSettings measures at this weight.
 	const wghtRef = useRef(wght)
-	wghtRef.current = wght
+	useLayoutEffect(() => {
+		wghtRef.current = wght
+	}, [wght])
 	const [fittedAt, setFittedAt] = useState<number | null>(null)
 	const [over, setOver] = useState(0)
 	const options: FitFlushOptions = useMemo(() => ({
